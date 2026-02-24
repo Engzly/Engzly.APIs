@@ -108,6 +108,20 @@
                 Meta = Meta
             };
         }
+
+
+        public Response<T> LoggedOutSuccessful<T>(T entity, object Meta = null)
+        {
+            return new Response<T>()
+            {
+                Data = entity,
+                StatusCode = (int)System.Net.HttpStatusCode.OK,
+                Succeeded = true,
+                Message = "Logged Out Successfully",
+                Meta = Meta
+            };
+        }
+
     }
 
 }

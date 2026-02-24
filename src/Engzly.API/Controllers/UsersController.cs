@@ -44,6 +44,15 @@ namespace Engzly.API.Controllers
         }
 
 
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] LogoutCommand command)
+        {
+            var response = await _mediator.Send(command);
+            return Resolve(response);
+        }
+
+
         #endregion
 
     }
