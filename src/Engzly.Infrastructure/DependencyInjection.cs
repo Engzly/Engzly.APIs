@@ -15,7 +15,7 @@ public static class DependencyInjection
     {
         services.AddDbContext<EngzlyDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
-        
+
         services.AddIdentity<User, IdentityRole>(option =>
         {
             option.Password.RequireDigit = true;
@@ -33,15 +33,15 @@ public static class DependencyInjection
             // User settings.
             option.User.AllowedUserNameCharacters =
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-            option.User.RequireUniqueEmail = true;
+            //option.User.RequireUniqueEmail = true;
             option.SignIn.RequireConfirmedEmail = true;
-            
+
         })
             .AddEntityFrameworkStores<EngzlyDbContext>()
             .AddDefaultTokenProviders();
-        
+
         services.AddScoped<ITokenService, TokenService>();
-        
+
         return services;
     }
 }

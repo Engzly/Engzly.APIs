@@ -1,4 +1,6 @@
 ﻿using Engzly.Application.Bases;
+using Engzly.Application.Responses;
+using Engzly.Domain.Enums;
 using MediatR;
 
 namespace Engzly.Application.Features.Users.Commands.Models
@@ -8,7 +10,9 @@ namespace Engzly.Application.Features.Users.Commands.Models
         string UserName,
         string Email,
         string PhoneNumber,
-        string City,
-        string Password
-    ) : IRequest<Response<string>>;
+        string Password,
+        AccountType AccountType,
+        double Latitude,
+        double Longitude
+    ) : IRequest<Response<CreateUserResponse>>;
 }
