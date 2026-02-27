@@ -1,4 +1,4 @@
-﻿namespace Engzly.Domain.Entities.Identity
+﻿namespace Engzly.Domain.Entities.Common
 {
     public sealed class Location
     {

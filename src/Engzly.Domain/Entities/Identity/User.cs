@@ -1,4 +1,5 @@
-﻿using Engzly.Domain.Enums;
+﻿using Engzly.Domain.Entities.Common;
+using Engzly.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 
 namespace Engzly.Domain.Entities.Identity
