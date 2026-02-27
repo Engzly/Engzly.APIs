@@ -1,4 +1,5 @@
-﻿using Engzly.Domain.Entities.Identity;
+﻿using Engzly.Domain.Entities.Gigs;
+using Engzly.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,24 +7,63 @@ namespace Engzly.Infrastructure.Persistence.Data
 {
     public class EngzlyDbContext(DbContextOptions<EngzlyDbContext> options) : IdentityDbContext<User>(options)
     {
+        public DbSet<Gig> Gigs { get; set; }
+        public DbSet<GigAssignment> GigAssignments { get; set; }
+        public DbSet<Proposal> Proposals { get; set; }
+        public DbSet<Category> Categories { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<User>(builder =>
-            {
-                builder.OwnsOne(u => u.Location, loc =>
-                {
-                    loc.Property(p => p.Latitude)
-                       .HasColumnName("Latitude")
-                       .IsRequired();
+            base.OnModelCreating(builder);
 
-                    loc.Property(p => p.Longitude)
-                       .HasColumnName("Longitude")
-                       .IsRequired();
+            builder.Entity<User>(u =>
+            {
+                u.OwnsOne(loc => loc.Location, l =>
+                {
+                    l.Property(p => p.Latitude).HasColumnName("Latitude").IsRequired();
+                    l.Property(p => p.Longitude).HasColumnName("Longitude").IsRequired();
                 });
             });
 
-            base.OnModelCreating(builder);
+            builder.Entity<Gig>(gig =>
+            {
+                gig.HasOne(g => g.Client)
+                   .WithMany()
+                   .HasForeignKey(g => g.OwnerId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
+                gig.HasOne(g => g.Category)
+                   .WithMany()
+                   .HasForeignKey(g => g.CategoryId);
+
+                gig.OwnsOne(g => g.Location);
+            });
+
+            builder.Entity<GigAssignment>(ga =>
+            {
+                ga.HasKey(ga => new { ga.GigId, ga.TaskerId }); 
+
+                ga.HasOne(ga => ga.Gig)
+                  .WithMany()
+                  .HasForeignKey(ga => ga.GigId);
+
+                ga.HasOne(ga => ga.Tasker)
+                  .WithMany()
+                  .HasForeignKey(ga => ga.TaskerId);
+            });
+
+
+            builder.Entity<Proposal>(p =>
+            {
+                p.HasOne(p => p.Gig)
+                 .WithMany()
+                 .HasForeignKey(p => p.GigId);
+
+                p.HasOne(p => p.Tasker)
+                 .WithMany()
+                 .HasForeignKey(p => p.TaskerId)
+                 .OnDelete(DeleteBehavior.Restrict);
+            });
         }
     }
 }
