@@ -12,6 +12,16 @@ namespace Engzly.Domain.Entities.Identity
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
 
+        //OTP
+        public string? OtpHash { get; set; }
+        public DateTime? OtpExpiresAtUtc { get; set; }
+        public int OtpAttempts { get; set; } = 0;
+
+        public OtpPurpose? OtpPurpose { get; set; }
+        public OtpChannel? OtpChannel { get; set; }
+
+        public DateTime? OtpLastSentAtUtc { get; set; }
+
         // Navigation Property to Document(Photos )
 
 
