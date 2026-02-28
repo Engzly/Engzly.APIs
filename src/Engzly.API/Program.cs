@@ -1,7 +1,11 @@
 using Engzly.API;
 using Engzly.API.Middlewares;
 using Engzly.Application;
+using Engzly.Application.Interfaces;
+using Engzly.Application.Interfaces.Notifications;
 using Engzly.Infrastructure;
+using Engzly.Infrastructure.OtpSecurity;
+using Engzly.Infrastructure.OtpSecurity.Notifications;
 using Engzly.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,10 +16,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+builder.Services.AddScoped<IOtpService, OtpService>();
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+builder.Services.AddScoped<IWhatsAppSender, WhatsAppSender>();
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
+
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApiServices(builder.Configuration);
-
+builder.Services.AddHttpClient<IWhatsAppSender, WhatsAppSender>();
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();

@@ -1,4 +1,6 @@
-﻿using Engzly.Application.Features.Users.Commands.Models;
+﻿using Englzly.Application.Features.Users.Commands.Models;
+using Engzly.Application.Features.Users.Commands.Models;
+using Engzly.Application.Users.Commands.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -43,6 +45,9 @@ namespace Engzly.API.Controllers
             return Resolve(response);
         }
 
+         [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordCommand cmd)
+            => Ok(await _mediator.Send(cmd));
 
 
         [HttpPost("logout")]
@@ -53,6 +58,9 @@ namespace Engzly.API.Controllers
         }
 
 
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordCommand cmd)
+            => Ok(await _mediator.Send(cmd));
         #endregion
 
     }

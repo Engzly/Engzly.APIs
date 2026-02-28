@@ -4,6 +4,7 @@ using Engzly.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Engzly.Infrastructure.Persistence.Data.Migrations
 {
     [DbContext(typeof(EngzlyDbContext))]
-    partial class EngzlyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260225205949_AddUserOtpFields")]
+    partial class AddUserOtpFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,135 +24,6 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Category", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Categories");
-                });
-
-            modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Gig", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<decimal>("Budget")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("CategoryId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CompletedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DueDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("LastModifiedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("NumberOfTaskersNeeded")
-                        .HasColumnType("int");
-
-                    b.Property<string>("OwnerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("OwnerId");
-
-                    b.ToTable("Gigs");
-                });
-
-            modelBuilder.Entity("Engzly.Domain.Entities.Gigs.GigAssignment", b =>
-                {
-                    b.Property<string>("GigId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("TaskerId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("AssignedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("GigId", "TaskerId");
-
-                    b.HasIndex("TaskerId");
-
-                    b.ToTable("GigAssignments");
-                });
-
-            modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Proposal", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("GigId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte>("Status")
-                        .HasColumnType("tinyint");
-
-                    b.Property<DateTime>("SubmittedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("TaskerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GigId");
-
-                    b.HasIndex("TaskerId");
-
-                    b.ToTable("Proposals");
-                });
 
             modelBuilder.Entity("Engzly.Domain.Entities.Identity.User", b =>
                 {
@@ -162,6 +36,10 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                     b.Property<int>("AccountType")
                         .HasColumnType("int");
 
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -173,14 +51,7 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GigId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("LastName")
+                    b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -225,10 +96,6 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("ProfileImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("RefreshToken")
                         .HasColumnType("nvarchar(max)");
 
@@ -249,8 +116,6 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("GigId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -396,116 +261,6 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Gig", b =>
-                {
-                    b.HasOne("Engzly.Domain.Entities.Gigs.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Engzly.Domain.Entities.Identity.User", "Client")
-                        .WithMany()
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.OwnsOne("Engzly.Domain.Entities.Common.Location", "Location", b1 =>
-                        {
-                            b1.Property<string>("GigId")
-                                .HasColumnType("nvarchar(450)");
-
-                            b1.Property<double>("Latitude")
-                                .HasColumnType("float");
-
-                            b1.Property<double>("Longitude")
-                                .HasColumnType("float");
-
-                            b1.HasKey("GigId");
-
-                            b1.ToTable("Gigs");
-
-                            b1.WithOwner()
-                                .HasForeignKey("GigId");
-                        });
-
-                    b.Navigation("Category");
-
-                    b.Navigation("Client");
-
-                    b.Navigation("Location")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Engzly.Domain.Entities.Gigs.GigAssignment", b =>
-                {
-                    b.HasOne("Engzly.Domain.Entities.Gigs.Gig", "Gig")
-                        .WithMany()
-                        .HasForeignKey("GigId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Engzly.Domain.Entities.Identity.User", "Tasker")
-                        .WithMany()
-                        .HasForeignKey("TaskerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Gig");
-
-                    b.Navigation("Tasker");
-                });
-
-            modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Proposal", b =>
-                {
-                    b.HasOne("Engzly.Domain.Entities.Gigs.Gig", "Gig")
-                        .WithMany()
-                        .HasForeignKey("GigId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Engzly.Domain.Entities.Identity.User", "Tasker")
-                        .WithMany()
-                        .HasForeignKey("TaskerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Gig");
-
-                    b.Navigation("Tasker");
-                });
-
-            modelBuilder.Entity("Engzly.Domain.Entities.Identity.User", b =>
-                {
-                    b.HasOne("Engzly.Domain.Entities.Gigs.Gig", null)
-                        .WithMany("Taskers")
-                        .HasForeignKey("GigId");
-
-                    b.OwnsOne("Engzly.Domain.Entities.Common.Location", "Location", b1 =>
-                        {
-                            b1.Property<string>("UserId")
-                                .HasColumnType("nvarchar(450)");
-
-                            b1.Property<double>("Latitude")
-                                .HasColumnType("float")
-                                .HasColumnName("Latitude");
-
-                            b1.Property<double>("Longitude")
-                                .HasColumnType("float")
-                                .HasColumnName("Longitude");
-
-                            b1.HasKey("UserId");
-
-                            b1.ToTable("AspNetUsers");
-
-                            b1.WithOwner()
-                                .HasForeignKey("UserId");
-                        });
-
-                    b.Navigation("Location")
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -555,11 +310,6 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Gig", b =>
-                {
-                    b.Navigation("Taskers");
                 });
 #pragma warning restore 612, 618
         }
