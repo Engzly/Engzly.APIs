@@ -1,5 +1,6 @@
 ﻿using Engzly.Domain.Entities.Gigs;
 using Engzly.Domain.Entities.Identity;
+using Engzly.Domain.Entities.Notifications;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,10 +8,11 @@ namespace Engzly.Infrastructure.Persistence.Data
 {
     public class EngzlyDbContext(DbContextOptions<EngzlyDbContext> options) : IdentityDbContext<User>(options)
     {
-        public DbSet<Gig> Gigs { get; set; }
-        public DbSet<GigAssignment> GigAssignments { get; set; }
-        public DbSet<Proposal> Proposals { get; set; }
-        public DbSet<Category> Categories { get; set; }
+        public DbSet<Gig> Gigs { get; private set; }
+        public DbSet<GigAssignment> GigAssignments { get; private set; }
+        public DbSet<Proposal> Proposals { get; private set; }
+        public DbSet<Category> Categories { get; private set; }
+        public DbSet<Notification> Notifications { get; private set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

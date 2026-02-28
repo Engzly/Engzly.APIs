@@ -1,7 +1,9 @@
 ﻿using Engzly.Application.Interfaces;
 using Engzly.Application.Services;
 using Engzly.Domain.Entities.Identity;
+using Engzly.Infrastructure.Notifications;
 using Engzly.Infrastructure.Persistence.Data;
+using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -42,6 +44,16 @@ public static class DependencyInjection
 
         services.AddScoped<ITokenService, TokenService>();
 
+        services.AddMassTransit(config =>
+        {
+            config.UsingRabbitMq((context, options) =>
+            {
+                options.Host("rabbitmq://localhost");
+                options.ConfigureEndpoints(context);
+            });
+        });
+        services.AddScoped<INotificationService, NotificationService>();
+        
         return services;
     }
 }
