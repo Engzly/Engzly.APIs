@@ -1,14 +1,19 @@
 ﻿using Engzly.Application.Bases;
+using Engzly.Application.Responses;
+using Engzly.Domain.Enums;
 using MediatR;
 
 namespace Engzly.Application.Features.Users.Commands.Models
 {
     public sealed record CreateUserCommand(
-        string FullName,
-        string UserName,
+        string FirstName,
+        string LastName,
         string Email,
+         string ProfileImageUrl,
         string PhoneNumber,
-        string City,
-        string Password
-    ) : IRequest<Response<string>>;
+        string Password,
+        AccountType AccountType,
+        double Latitude,
+        double Longitude
+    ) : IRequest<Response<CreateUserResponse>>;
 }
