@@ -8,37 +8,41 @@ using Engzly.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 
-namespace Engzly.Application.Features.Users.Commands.Handlers;
-
-public class CreateUserCommandHandler(
-    UserManager<User> _userManager,
-    IMapper _mapper,
-    ITokenService tokenService
-) : ResponseHandler,
-    IRequestHandler<CreateUserCommand, Response<CreateUserResponse>>
+namespace Engzly.Application.Features.Users.Commands.Handlers
 {
-    public async Task<Response<CreateUserResponse>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
+    public class CreateUserCommandHandler(UserManager<User> _userManager, IMapper _mapper, ITokenService tokenService, IFileService _fileService) : ResponseHandler,
+     IRequestHandler<CreateUserCommand, Response<CreateUserResponse>>
     {
-       
-        var userName = $"{request.FirstName}.{request.LastName}".ToLower();
 
-       
-        var isUserNameExist = await _userManager.FindByNameAsync(userName);
-        if (isUserNameExist != null)
-            return BadRequest<CreateUserResponse>("User Name already exists. You can't add this account again.");
-
-    
-        var user = _mapper.Map<User>(request);
-        user.UserName = userName; 
-        user.SetLocation(request.Latitude, request.Longitude);
-
-       
-        var result = await _userManager.CreateAsync(user, request.Password);
-        if (!result.Succeeded)
+        public async Task<Response<CreateUserResponse>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
-            var errors = result.Errors.Select(e => e.Description).ToList();
-            return BadRequest<CreateUserResponse>("Failed to create user", errors);
-        }
+
+            var isUserNameExist = await _userManager.FindByNameAsync(request.UserName);
+            if (isUserNameExist != null)
+                return BadRequest<CreateUserResponse>("User Name Is Exist Before You Can't Add This Account Again ");
+
+            //Logic to add user will be here
+            var user = _mapper.Map<User>(request);
+
+            //user.SetLocation(request.Latitude, request.Longitude); // If you have latitude and longitude in your request, you can set them here
+
+            if (request.ProfileImage != null)
+            {
+                var imageUrl = await _fileService.UploadFileAsync(request.ProfileImage, "Images");
+                user.ProfileImageUrl = imageUrl;
+            }
+            else
+            {
+                user.ProfileImageUrl = "/Images/default.png";
+            }
+
+            var result = await _userManager.CreateAsync(user, request.Password);
+            if (!result.Succeeded)
+            {
+
+                var errors = result.Errors.Select(e => e.Description).ToList();
+                return BadRequest<CreateUserResponse>("Failed to create user", errors);
+            }
 
        
         user.Status = UserStatus.Active;

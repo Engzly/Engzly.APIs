@@ -1,11 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
-    </PropertyGroup>
+      <UserSecretsId>81f55fc6-f3be-4149-a9b4-902b2522c998</UserSecretsId>
+  </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
@@ -23,6 +24,10 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Engzly.Infrastructure\Engzly.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="wwwroot\Images\" />
     </ItemGroup>
 
 </Project>

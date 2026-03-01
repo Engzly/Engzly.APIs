@@ -4,6 +4,7 @@ using Engzly.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Engzly.Infrastructure.Persistence.Data.Migrations
 {
     [DbContext(typeof(EngzlyDbContext))]
-    partial class EngzlyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260301105924_addCityAgainToUser")]
+    partial class addCityAgainToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -202,24 +205,6 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<int>("OtpAttempts")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("OtpChannel")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("OtpExpiresAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("OtpHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("OtpLastSentAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("OtpPurpose")
-                        .HasColumnType("int");
-
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
@@ -230,6 +215,7 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("ProfileImageUrl")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RefreshToken")
