@@ -2,7 +2,8 @@
 using Engzly.Application.Bases;
 using Engzly.Application.Features.Users.Commands.Models;
 using Engzly.Application.Interfaces;
-using Engzly.Application.Responses;
+using Engzly.Application.Interfaces.Services;
+using Engzly.Application.Responses.UsersResponse;
 using Engzly.Domain.Entities.Identity;
 using Engzly.Domain.Enums;
 using MediatR;
@@ -41,23 +42,24 @@ public class CreateUserCommandHandler(
         }
 
 
-        user.Status = UserStatus.Active;
-        user.EmailConfirmed = true;
+            user.Status = UserStatus.Active;
+            user.EmailConfirmed = true;
 
 
-        var accessToken = await tokenService.GenerateJwtToken(user);
-        user.RefreshToken = tokenService.GenerateRefreshToken();
-        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-        await _userManager.UpdateAsync(user);
+            var accessToken = await tokenService.GenerateJwtToken(user);
+            user.RefreshToken = tokenService.GenerateRefreshToken();
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _userManager.UpdateAsync(user);
 
 
-        var response = new CreateUserResponse
-        {
-            UserId = user.Id,
-            AccessToken = accessToken,
-            RefreshToken = user.RefreshToken
-        };
+            var response = new CreateUserResponse
+            {
+                UserId = user.Id,
+                AccessToken = accessToken,
+                RefreshToken = user.RefreshToken
+            };
 
-        return Success(response, "User created successfully");
+            return Success(response, "User created successfully");
+        }
     }
 }
