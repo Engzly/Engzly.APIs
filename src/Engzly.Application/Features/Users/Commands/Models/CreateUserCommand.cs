@@ -6,9 +6,10 @@ using MediatR;
 namespace Engzly.Application.Features.Users.Commands.Models
 {
     public sealed record CreateUserCommand(
-        string FullName,
-        string UserName,
+        string FirstName,
+        string LastName,
         string Email,
+         string ProfileImageUrl,
         string PhoneNumber,
         string Password,
         AccountType AccountType,

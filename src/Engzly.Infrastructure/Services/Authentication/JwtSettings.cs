@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Engzly.Application.Config
+namespace Engzly.Infrastructure.Services.Authentication
 {
     public class JwtSettings
     {
