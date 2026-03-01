@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Engzly.Application.Bases;
 using Engzly.Application.Features.Users.Commands.Models;
+using Engzly.Application.Interfaces;
 using Engzly.Application.Interfaces.Services;
 using Engzly.Application.Responses.UsersResponse;
 using Engzly.Domain.Entities.Identity;
@@ -44,24 +45,25 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
                 return BadRequest<CreateUserResponse>("Failed to create user", errors);
             }
 
-       
-        user.Status = UserStatus.Active;
-        user.EmailConfirmed = true;
 
-       
-        var accessToken = await tokenService.GenerateJwtToken(user);
-        user.RefreshToken = tokenService.GenerateRefreshToken();
-        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-        await _userManager.UpdateAsync(user);
+            user.Status = UserStatus.Active;
+            user.EmailConfirmed = true;
 
-       
-        var response = new CreateUserResponse
-        {
-            UserId = user.Id,
-            AccessToken = accessToken,
-            RefreshToken = user.RefreshToken
-        };
 
-        return Success(response, "User created successfully");
+            var accessToken = await tokenService.GenerateJwtToken(user);
+            user.RefreshToken = tokenService.GenerateRefreshToken();
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _userManager.UpdateAsync(user);
+
+
+            var response = new CreateUserResponse
+            {
+                UserId = user.Id,
+                AccessToken = accessToken,
+                RefreshToken = user.RefreshToken
+            };
+
+            return Success(response, "User created successfully");
+        }
     }
 }

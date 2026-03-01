@@ -1,4 +1,5 @@
-﻿using Engzly.Application.Interfaces.Repositories;
+﻿using Engzly.Application.Interfaces;
+using Engzly.Application.Interfaces.Repositories;
 using Engzly.Application.Interfaces.Services;
 using Engzly.Domain.Entities.Identity;
 using Engzly.Infrastructure.FileServices;
@@ -48,7 +49,7 @@ public static class DependencyInjection
             .AddDefaultTokenProviders();
 
         services.AddScoped<ITokenService, TokenService>();
-        services.AddScoped<IFileStorageService, FileStorageService>();
+        services.AddScoped<IFileService, FileService>();
 
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         return services;
