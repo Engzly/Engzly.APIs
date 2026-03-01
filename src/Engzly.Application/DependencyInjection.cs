@@ -1,7 +1,5 @@
 ﻿using System.Reflection;
 using Engzly.Application.Behaviors;
-using Engzly.Application.Features.Users.Commands.Models;
-using Engzly.Application.Interfaces;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +15,7 @@ public static class DependencyInjection
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-        
+        services.AddHttpContextAccessor();
         return services;
     }
 }

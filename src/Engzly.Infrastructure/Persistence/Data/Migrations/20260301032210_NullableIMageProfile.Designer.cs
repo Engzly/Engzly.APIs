@@ -4,6 +4,7 @@ using Engzly.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Engzly.Infrastructure.Persistence.Data.Migrations
 {
     [DbContext(typeof(EngzlyDbContext))]
-    partial class EngzlyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260301032210_NullableIMageProfile")]
+    partial class NullableIMageProfile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,10 +165,6 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                     b.Property<int>("AccountType")
                         .HasColumnType("int");
 
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -201,24 +200,6 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
-
-                    b.Property<int>("OtpAttempts")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("OtpChannel")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("OtpExpiresAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("OtpHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("OtpLastSentAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("OtpPurpose")
-                        .HasColumnType("int");
 
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
@@ -483,6 +464,30 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                     b.HasOne("Engzly.Domain.Entities.Gigs.Gig", null)
                         .WithMany("Taskers")
                         .HasForeignKey("GigId");
+
+                    b.OwnsOne("Engzly.Domain.Entities.Common.Location", "Location", b1 =>
+                        {
+                            b1.Property<string>("UserId")
+                                .HasColumnType("nvarchar(450)");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("float")
+                                .HasColumnName("Latitude");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("float")
+                                .HasColumnName("Longitude");
+
+                            b1.HasKey("UserId");
+
+                            b1.ToTable("AspNetUsers");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserId");
+                        });
+
+                    b.Navigation("Location")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

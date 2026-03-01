@@ -11,7 +11,7 @@ namespace Engzly.Domain.Entities.Identity
 
         //public Location Location { get; set; }
         public AccountType AccountType { get; set; }
-        public string ProfileImageUrl { get; set; } = null!;
+        public string? ProfileImageUrl { get; set; } 
         public UserStatus Status { get; set; } = UserStatus.Pending;
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }

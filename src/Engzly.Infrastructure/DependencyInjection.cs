@@ -1,8 +1,8 @@
 ﻿using Engzly.Application.Interfaces;
-using Engzly.Application.Services;
 using Engzly.Domain.Entities.Identity;
-using Engzly.Infrastructure.FileServices;
 using Engzly.Infrastructure.Persistence.Data;
+using Engzly.Infrastructure.Services;
+using Engzly.Infrastructure.Services.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -17,7 +17,6 @@ public static class DependencyInjection
         services.AddDbContext<EngzlyDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-        services.AddScoped<IFileService, FileService>();
 
         services.AddIdentity<User, IdentityRole>(option =>
         {
@@ -44,7 +43,7 @@ public static class DependencyInjection
             .AddDefaultTokenProviders();
 
         services.AddScoped<ITokenService, TokenService>();
-
+        services.AddScoped<IFileStorageService, FileStorageService>();
         return services;
     }
 }

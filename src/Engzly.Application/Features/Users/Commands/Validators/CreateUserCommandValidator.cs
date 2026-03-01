@@ -20,6 +20,7 @@ namespace Engzly.Application.Features.Users.Commands.Validators
                 .NotEmpty().WithMessage("Name is required")
                 .Length(1, 100).WithMessage("Name must be between 1 and 100 characters")
                 .NotNull().WithMessage("Name must not be null");
+
             RuleFor(S => S.LastName)
                 .NotEmpty().WithMessage("Name is required")
                 .Length(1, 100).WithMessage("Name must be between 1 and 100 characters")

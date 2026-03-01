@@ -11,8 +11,7 @@ namespace Engzly.API.Controllers
         #region EndPoints 
 
         [HttpPost("register")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> Create([FromForm] CreateUserCommand command)
+        public async Task<IActionResult> Create([FromBody] CreateUserCommand command)
         {
             var response = await _mediator.Send(command);
             return Resolve(response);
@@ -46,9 +45,6 @@ namespace Engzly.API.Controllers
             return Resolve(response);
         }
 
-         [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword(ForgotPasswordCommand cmd)
-            => Ok(await _mediator.Send(cmd));
 
 
         [HttpPost("logout")]
@@ -58,10 +54,25 @@ namespace Engzly.API.Controllers
             return Resolve(response);
         }
 
+        //[Authorize]
+        [HttpPost("upload-profile-image")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadProfileImage([FromForm] UploadProfileImageCommand request)
+        {
+            var result = await _mediator.Send(new UploadProfileImageCommand { UserId = request.UserId, Image = request.Image });
+            return Ok(result);
+        }
+
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordCommand cmd)
+   => Ok(await _mediator.Send(cmd));
 
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword(ResetPasswordCommand cmd)
-            => Ok(await _mediator.Send(cmd));
+    => Ok(await _mediator.Send(cmd));
+
+
         #endregion
 
     }
