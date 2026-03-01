@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Engzly.Application.Responses
+namespace Engzly.Application.Responses.UsersResponse
 {
     public class LoginResponse
     {

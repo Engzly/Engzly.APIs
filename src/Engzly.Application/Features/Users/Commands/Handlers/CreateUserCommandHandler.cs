@@ -9,37 +9,23 @@ using Engzly.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 
-namespace Engzly.Application.Features.Users.Commands.Handlers;
-
-public class CreateUserCommandHandler(
-    UserManager<User> _userManager,
-    IMapper _mapper,
-    ITokenService tokenService
-) : ResponseHandler,
-    IRequestHandler<CreateUserCommand, Response<CreateUserResponse>>
+namespace Engzly.Application.Features.Users.Commands.Handlers
 {
-    public async Task<Response<CreateUserResponse>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
+    public class CreateUserCommandHandler(UserManager<User> _userManager, IMapper _mapper, ITokenService tokenService, IFileService _fileService) : ResponseHandler,
+     IRequestHandler<CreateUserCommand, Response<CreateUserResponse>>
     {
 
-        var userName = $"{request.FirstName}.{request.LastName}".ToLower();
-
-
-        var isUserNameExist = await _userManager.FindByNameAsync(userName);
-        if (isUserNameExist != null)
-            return BadRequest<CreateUserResponse>("User Name already exists. You can't add this account again.");
-
-
-        var user = _mapper.Map<User>(request);
-        user.UserName = userName;
-
-
-
-        var result = await _userManager.CreateAsync(user, request.Password);
-        if (!result.Succeeded)
+        public async Task<Response<CreateUserResponse>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
-            var errors = result.Errors.Select(e => e.Description).ToList();
-            return BadRequest<CreateUserResponse>("Failed to create user", errors);
-        }
+
+
+            var result = await _userManager.CreateAsync(user, request.Password);
+            if (!result.Succeeded)
+            {
+
+                var errors = result.Errors.Select(e => e.Description).ToList();
+                return BadRequest<CreateUserResponse>("Failed to create user", errors);
+            }
 
 
             user.Status = UserStatus.Active;

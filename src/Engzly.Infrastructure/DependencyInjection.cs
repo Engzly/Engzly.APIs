@@ -3,8 +3,10 @@ using Engzly.Application.Interfaces.Repositories;
 using Engzly.Application.Interfaces.Services;
 using Engzly.Domain.Entities.Identity;
 using Engzly.Infrastructure.Persistence.Data;
+using Engzly.Infrastructure.Repositories;
 using Engzly.Infrastructure.Services;
 using Engzly.Infrastructure.Services.Authentication;
+using Engzly.Infrastructure.Specifications;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -45,7 +47,7 @@ public static class DependencyInjection
             .AddDefaultTokenProviders();
 
         services.AddScoped<ITokenService, TokenService>();
-
+        services.AddScoped<IFileService, FileService>();
 
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         return services;

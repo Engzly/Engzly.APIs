@@ -7,7 +7,7 @@ namespace Engzly.API.Controllers
 {
     public sealed class GigsController(ISender _mediator) : BaseApiController
     {
-       
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTaskDetails(string id)
         {
