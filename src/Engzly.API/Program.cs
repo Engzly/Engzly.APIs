@@ -29,7 +29,7 @@ builder.Services.AddHttpClient<IWhatsAppSender, WhatsAppSender>();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
-var app = builder.Build(); 
+var app = builder.Build();
 #endregion
 
 #region Apply Migrations
@@ -37,7 +37,7 @@ using var scope = app.Services.CreateScope();
 var context = scope.ServiceProvider.GetRequiredService<EngzlyDbContext>();
 var migrations = context.Database.GetPendingMigrations();
 if (migrations.Any())
-    await context.Database.MigrateAsync(); 
+    await context.Database.MigrateAsync();
 #endregion
 
 
@@ -51,14 +51,14 @@ if (true || app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseMiddleware<ErrorHandlerMiddleware>();
-
+app.UseStaticFiles();
 app.UseAuthentication();
-app.UseAuthorization(); 
+app.UseAuthorization();
 #endregion
 
 
 #region Map Controllers
 app.MapControllers();
 
-app.Run(); 
+app.Run();
 #endregion

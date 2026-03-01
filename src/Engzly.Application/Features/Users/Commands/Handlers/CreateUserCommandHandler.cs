@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Engzly.Application.Features.Users.Commands.Handlers
 {
-    public class CreateUserCommandHandler(UserManager<User> _userManager, IMapper _mapper, ITokenService tokenService) : ResponseHandler,
+    public class CreateUserCommandHandler(UserManager<User> _userManager, IMapper _mapper, ITokenService tokenService, IFileService _fileService) : ResponseHandler,
      IRequestHandler<CreateUserCommand, Response<CreateUserResponse>>
     {
 
@@ -23,7 +23,19 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
 
             //Logic to add user will be here
             var user = _mapper.Map<User>(request);
-            user.SetLocation(request.Latitude, request.Longitude);
+
+            //user.SetLocation(request.Latitude, request.Longitude); // If you have latitude and longitude in your request, you can set them here
+
+            if (request.ProfileImage != null)
+            {
+                var imageUrl = await _fileService.UploadFileAsync(request.ProfileImage, "Images");
+                user.ProfileImageUrl = imageUrl;
+            }
+            else
+            {
+                user.ProfileImageUrl = "/Images/default.png";
+            }
+
             var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
             {

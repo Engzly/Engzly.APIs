@@ -8,6 +8,6 @@ public sealed class EngzlyProfile : Profile
 {
     public EngzlyProfile()
     {
-        CreateMap<CreateUserCommand, User>();
+        CreateMap<CreateUserCommand, User>().ForMember(dest => dest.ProfileImageUrl, opt => opt.Ignore());
     }
 }
