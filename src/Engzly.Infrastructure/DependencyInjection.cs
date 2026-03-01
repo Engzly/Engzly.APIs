@@ -1,7 +1,9 @@
 ﻿using Engzly.Application.Interfaces;
 using Engzly.Application.Interfaces.Repositories;
 using Engzly.Application.Interfaces.Services;
+using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
 using Engzly.Domain.Entities.Identity;
+using Engzly.Infrastructure.FileServices;
 using Engzly.Infrastructure.Persistence.Data;
 using Engzly.Infrastructure.Repositories;
 using Engzly.Infrastructure.Services;
@@ -21,6 +23,7 @@ public static class DependencyInjection
         services.AddDbContext<EngzlyDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
+        services.AddScoped<IFileService, FileService>();
 
         services.AddIdentity<User, IdentityRole>(option =>
         {

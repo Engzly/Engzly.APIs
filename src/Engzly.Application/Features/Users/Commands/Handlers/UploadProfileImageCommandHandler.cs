@@ -1,6 +1,7 @@
 ﻿using Engzly.Application.Bases;
 using Engzly.Application.Features.Users.Commands.Models;
 using Engzly.Application.Interfaces;
+using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
 using Engzly.Domain.Entities.Identity;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -10,13 +11,13 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
 {
     public sealed class UploadProfileImageCommandHandler(
         UserManager<User> userManager,
-        IFileStorageService fileStorage,
+        IFileService fileStorage,
         IHttpContextAccessor httpContext)
         : ResponseHandler,
           IRequestHandler<UploadProfileImageCommand, Response<string>>
     {
         private readonly UserManager<User> _userManager = userManager;
-        private readonly IFileStorageService _fileStorage = fileStorage;
+        private readonly IFileService _fileStorage = fileStorage;
         private readonly IHttpContextAccessor _httpContext = httpContext;
 
         public async Task<Response<string>> Handle(
@@ -48,7 +49,7 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
             if (_user == null)
                 return BadRequest<string>("User not found");
 
-            var imageUrl = await _fileStorage.UploadAsync(file, "Images");
+            var imageUrl = await _fileStorage.UploadFileAsync(file, "Images");
 
 
             _user.ProfileImageUrl = imageUrl;

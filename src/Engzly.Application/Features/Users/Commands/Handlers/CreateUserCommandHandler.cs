@@ -3,6 +3,7 @@ using Engzly.Application.Bases;
 using Engzly.Application.Features.Users.Commands.Models;
 using Engzly.Application.Interfaces;
 using Engzly.Application.Interfaces.Services;
+using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
 using Engzly.Application.Responses.UsersResponse;
 using Engzly.Domain.Entities.Identity;
 using Engzly.Domain.Enums;
@@ -18,6 +19,24 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
         public async Task<Response<CreateUserResponse>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
 
+            var isUserNameExist = await _userManager.FindByNameAsync(request.UserName);
+            if (isUserNameExist != null)
+                return BadRequest<CreateUserResponse>("User Name Is Exist Before You Can't Add This Account Again ");
+
+            //Logic to add user will be here
+            var user = _mapper.Map<User>(request);
+
+            //user.SetLocation(request.Latitude, request.Longitude); // If you have latitude and longitude in your request, you can set them here
+
+            if (request.ProfileImage != null)
+            {
+                var imageUrl = await _fileService.UploadFileAsync(request.ProfileImage, "Images");
+                user.ProfileImageUrl = imageUrl;
+            }
+            else
+            {
+                user.ProfileImageUrl = "/Images/default.png";
+            }
 
             var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
