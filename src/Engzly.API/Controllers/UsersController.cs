@@ -1,7 +1,5 @@
 ﻿using Engzly.Application.Features.Users.Commands.Models;
-using Engzly.Application.Responses;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Engzly.API.Controllers
@@ -43,24 +41,6 @@ namespace Engzly.API.Controllers
         {
             var response = await _mediator.Send(new DeleteUserCommand(id));
             return Resolve(response);
-        }
-
-
-
-        [HttpPost("logout")]
-        public async Task<IActionResult> Logout([FromBody] LogoutCommand command)
-        {
-            var response = await _mediator.Send(command);
-            return Resolve(response);
-        }
-
-        [Authorize]
-        [HttpPost("upload-profile-image")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UploadProfileImage([FromForm] UploadProfileImageResponse request)
-        {
-            var result = await _mediator.Send(new UploadProfileImageCommand { Image = request.Image });
-            return Ok(result);
         }
 
 

@@ -1,8 +1,7 @@
 ﻿using Engzly.Application.Interfaces;
+using Engzly.Application.Services;
 using Engzly.Domain.Entities.Identity;
 using Engzly.Infrastructure.Persistence.Data;
-using Engzly.Infrastructure.Services;
-using Engzly.Infrastructure.Services.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,7 +15,7 @@ public static class DependencyInjection
     {
         services.AddDbContext<EngzlyDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
-
+        
         services.AddIdentity<User, IdentityRole>(option =>
         {
             option.Password.RequireDigit = true;
@@ -34,15 +33,15 @@ public static class DependencyInjection
             // User settings.
             option.User.AllowedUserNameCharacters =
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-            //option.User.RequireUniqueEmail = true;
+            option.User.RequireUniqueEmail = true;
             option.SignIn.RequireConfirmedEmail = true;
-
+            
         })
             .AddEntityFrameworkStores<EngzlyDbContext>()
             .AddDefaultTokenProviders();
-
+        
         services.AddScoped<ITokenService, TokenService>();
-        services.AddScoped<IFileStorageService, FileStorageService>();
+        
         return services;
     }
 }
