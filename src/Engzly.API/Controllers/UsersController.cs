@@ -9,7 +9,8 @@ namespace Engzly.API.Controllers
         #region EndPoints 
 
         [HttpPost("register")]
-        public async Task<IActionResult> Create([FromBody] CreateUserCommand command)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Create([FromForm] CreateUserCommand command)
         {
             var response = await _mediator.Send(command);
             return Resolve(response);

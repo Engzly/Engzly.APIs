@@ -1,5 +1,4 @@
-﻿using Engzly.Domain.Entities.Common;
-using Engzly.Domain.Enums;
+﻿using Engzly.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 
 namespace Engzly.Domain.Entities.Identity
@@ -8,7 +7,9 @@ namespace Engzly.Domain.Entities.Identity
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public Location Location { get; set; }
+        public string City { get; set; }
+
+        //public Location Location { get; set; }
         public AccountType AccountType { get; set; }
         public string ProfileImageUrl { get; set; } = null!;
         public UserStatus Status { get; set; } = UserStatus.Pending;
@@ -26,10 +27,10 @@ namespace Engzly.Domain.Entities.Identity
             LockoutEnd = DateTimeOffset.MaxValue;
         }
 
-        public void SetLocation(double latitude, double longitude)
-        {
-            Location = new Location(latitude, longitude);
-        }
+        //public void SetLocation(double latitude, double longitude)
+        //{
+        //    Location = new Location(latitude, longitude);
+        //}
 
     }
 }
