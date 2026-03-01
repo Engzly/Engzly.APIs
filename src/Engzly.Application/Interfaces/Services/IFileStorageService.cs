@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Engzly.Application.Interfaces
+namespace Engzly.Application.Interfaces.Services
 {
     public interface IFileStorageService
     {

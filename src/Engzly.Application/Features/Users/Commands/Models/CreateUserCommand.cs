@@ -1,5 +1,5 @@
 ﻿using Engzly.Application.Bases;
-using Engzly.Application.Responses;
+using Engzly.Application.Responses.UsersResponse;
 using Engzly.Domain.Enums;
 using MediatR;
 

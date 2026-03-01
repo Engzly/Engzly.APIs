@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using Engzly.Application.Bases;
 using Engzly.Application.Features.Users.Commands.Models;
-using Engzly.Application.Interfaces;
+using Engzly.Application.Interfaces.Services;
 using Engzly.Application.Responses;
 using Engzly.Domain.Entities.Identity;
 using MediatR;

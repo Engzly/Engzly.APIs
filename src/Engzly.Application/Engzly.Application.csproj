@@ -12,6 +12,8 @@
 
     <ItemGroup>
       <Folder Include="Common\" />
+      <Folder Include="Features\Gigs\Commands\" />
+      <Folder Include="Features\Gigs\Queries\Validators\" />
       <Folder Include="Features\Users\Commands\Results\" />
       <Folder Include="Features\Users\Queries\Models\" />
       <Folder Include="Features\Users\Queries\Handlers\" />

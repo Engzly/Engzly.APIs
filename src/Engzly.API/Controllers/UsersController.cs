@@ -1,5 +1,5 @@
 ﻿using Engzly.Application.Features.Users.Commands.Models;
-using Engzly.Application.Responses;
+using Engzly.Application.Responses.UsersResponse;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
