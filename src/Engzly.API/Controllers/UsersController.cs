@@ -54,14 +54,7 @@ namespace Engzly.API.Controllers
             return Resolve(response);
         }
 
-        [Authorize]
-        [HttpPost("upload-profile-image")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UploadProfileImage([FromForm] UploadProfileImageResponse request)
-        {
-            var result = await _mediator.Send(new UploadProfileImageCommand { Image = request.Image });
-            return Ok(result);
-        }
+     
 
 
         #endregion
