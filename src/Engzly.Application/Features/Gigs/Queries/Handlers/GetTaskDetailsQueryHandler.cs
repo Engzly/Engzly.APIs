@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
-using Engzly.Application.Bases;
+using Engzly.Application.Common.Bases;
 using Engzly.Application.Features.Gigs.Queries.Models;
 using Engzly.Application.Interfaces.Repositories;
 using Engzly.Application.Interfaces.Specifications;

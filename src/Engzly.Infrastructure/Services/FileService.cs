@@ -1,9 +1,8 @@
-﻿using Engzly.Application.Interfaces;
-using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
+﻿using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 
-namespace Engzly.Infrastructure.FileServices
+namespace Engzly.Infrastructure.Services
 {
     public class FileService(IWebHostEnvironment _environment) : IFileService
     {

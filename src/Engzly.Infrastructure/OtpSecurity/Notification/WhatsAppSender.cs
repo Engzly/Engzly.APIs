@@ -1,9 +1,6 @@
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using Engzly.Application.Interfaces.Notifications;
-using Microsoft.Extensions.Options;
 
-namespace Engzly.Infrastructure.OtpSecurity.Notifications
+namespace Engzly.Infrastructure.OtpSecurity.Notification
 {
     public class WhatsAppSender : IWhatsAppSender
     {

@@ -1,8 +1,8 @@
-using Engzly.Application.Bases;
+using Engzly.Application.Common.Bases;
 using Engzly.Domain.Enums;
 using MediatR;
 
-namespace Engzly.Application.Users.Commands.Models
+namespace Engzly.Application.Features.Users.Commands.Models
 {
   public class ForgotPasswordCommand : IRequest<Response<string>>
     {

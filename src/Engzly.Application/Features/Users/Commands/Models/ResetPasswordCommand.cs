@@ -1,8 +1,8 @@
-using Engzly.Application.Bases;
+using Engzly.Application.Common.Bases;
 using Engzly.Domain.Enums;
 using MediatR;
 
-namespace Englzly.Application.Features.Users.Commands.Models
+namespace Engzly.Application.Features.Users.Commands.Models
 {
     public class ResetPasswordCommand : IRequest<Response<string>>
     {

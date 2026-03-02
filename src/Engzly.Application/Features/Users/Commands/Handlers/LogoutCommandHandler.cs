@@ -1,4 +1,4 @@
-﻿using Engzly.Application.Bases;
+﻿using Engzly.Application.Common.Bases;
 using Engzly.Application.Features.Users.Commands.Models;
 using Engzly.Domain.Entities.Identity;
 using MediatR;

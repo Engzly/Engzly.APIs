@@ -1,4 +1,4 @@
-﻿namespace Engzly.Application.Bases
+﻿namespace Engzly.Application.Common.Bases
 {
     public class Response<T>
     {

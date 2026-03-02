@@ -1,4 +1,4 @@
-﻿using Engzly.Application.Bases;
+﻿using Engzly.Application.Common.Bases;
 using Engzly.Application.Features.Users.Commands.Models;
 using Engzly.Application.Interfaces;
 using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;

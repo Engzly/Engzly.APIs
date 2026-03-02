@@ -1,4 +1,4 @@
-﻿using Engzly.Application.Bases;
+﻿using Engzly.Application.Common.Bases;
 using MediatR;
 
 namespace Engzly.Application.Features.Users.Commands.Models

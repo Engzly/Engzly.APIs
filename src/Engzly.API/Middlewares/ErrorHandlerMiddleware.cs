@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text.Json;
-using Engzly.Application.Bases;
+using Engzly.Application.Common.Bases;
 
 namespace Engzly.API.Middlewares
 {

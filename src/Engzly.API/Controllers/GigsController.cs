@@ -5,13 +5,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Engzly.API.Controllers
 {
-    public sealed class GigsController(ISender _mediator) : BaseApiController
+    public sealed class GigsController(ISender mediator) : BaseApiController
     {
-        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTaskDetails(string id)
         {
-            var result = await _mediator.Send(new GetTaskDetailsQuery(id));
+            var result = await mediator.Send(new GetTaskDetailsQuery(id));
             return Resolve(result);
         }
     }

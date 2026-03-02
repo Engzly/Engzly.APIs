@@ -11,11 +11,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Engzly.Infrastructure.Repositories
 {
-    public class GenericRepository<T> : IGenericRepository<T> where T : class
+    public class GenericRepository<T>(EngzlyDbContext context) : IGenericRepository<T>
+        where T : class
     {
-        private readonly DbContext _context;
-
-        public GenericRepository(EngzlyDbContext context) => _context = context;
+        private readonly DbContext _context = context;
 
         public async Task<T?> FirstOrDefaultAsync(ISpecification<T> spec, CancellationToken cancellationToken = default)
         {

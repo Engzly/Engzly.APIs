@@ -1,8 +1,8 @@
-﻿using Engzly.Application.Bases;
+﻿using Engzly.Application.Common.Bases;
 using FluentValidation;
 using MediatR;
 
-namespace Engzly.Application.Behaviors
+namespace Engzly.Application.Common.Behaviors
 {
     public class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidator<TRequest>> validators)
         : IPipelineBehavior<TRequest, TResponse>

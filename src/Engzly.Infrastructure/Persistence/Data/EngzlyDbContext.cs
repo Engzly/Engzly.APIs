@@ -17,7 +17,13 @@ namespace Engzly.Infrastructure.Persistence.Data
             base.OnModelCreating(builder);
 
             builder.ApplyConfigurationsFromAssembly(typeof(EngzlyDbContext).Assembly);
+        }
 
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            base.ConfigureConventions(configurationBuilder);
+            
+            configurationBuilder.Properties<decimal>().HavePrecision(18, 2);
         }
     }
 }

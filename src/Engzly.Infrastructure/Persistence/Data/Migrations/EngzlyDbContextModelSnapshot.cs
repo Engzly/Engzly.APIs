@@ -25,15 +25,18 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
             modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Category", b =>
                 {
                     b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -43,9 +46,11 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
             modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Gig", b =>
                 {
                     b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("Budget")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("CategoryId")
@@ -60,14 +65,16 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
 
                     b.Property<DateTime>("LastModifiedOn")
                         .HasColumnType("datetime2");
@@ -87,7 +94,8 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -100,21 +108,27 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
 
             modelBuilder.Entity("Engzly.Domain.Entities.Gigs.GigAssignment", b =>
                 {
-                    b.Property<string>("GigId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("TaskerId")
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("AssignedOn")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("GigId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("GigId", "TaskerId");
+                    b.Property<string>("TaskerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("TaskerId");
+
+                    b.HasIndex("GigId", "TaskerId")
+                        .IsUnique();
 
                     b.ToTable("GigAssignments");
                 });
@@ -122,6 +136,7 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
             modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Proposal", b =>
                 {
                     b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("GigId")
@@ -130,7 +145,8 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
 
                     b.Property<string>("Message")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<byte>("Status")
                         .HasColumnType("tinyint");
@@ -404,7 +420,7 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                     b.HasOne("Engzly.Domain.Entities.Gigs.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Engzly.Domain.Entities.Identity.User", "Client")
@@ -419,10 +435,12 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                                 .HasColumnType("nvarchar(450)");
 
                             b1.Property<double>("Latitude")
-                                .HasColumnType("float");
+                                .HasColumnType("float")
+                                .HasColumnName("Latitude");
 
                             b1.Property<double>("Longitude")
-                                .HasColumnType("float");
+                                .HasColumnType("float")
+                                .HasColumnName("Longitude");
 
                             b1.HasKey("GigId");
 
@@ -451,7 +469,7 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                     b.HasOne("Engzly.Domain.Entities.Identity.User", "Tasker")
                         .WithMany()
                         .HasForeignKey("TaskerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Gig");

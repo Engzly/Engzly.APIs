@@ -6,17 +6,14 @@ namespace Engzly.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class OtpController : ControllerBase
+    public class OtpController(ISender mediator) : ControllerBase
     {
-        private readonly IMediator _mediator;
-        public OtpController(IMediator mediator) => _mediator = mediator;
-
         [HttpPost("send")]
         public async Task<IActionResult> Send(SendOtpCommand cmd)
-            => Ok(await _mediator.Send(cmd));
+            => Ok(await mediator.Send(cmd));
 
         [HttpPost("verify")]
         public async Task<IActionResult> Verify(VerifyOtpCommand cmd)
-            => Ok(await _mediator.Send(cmd));
+            => Ok(await mediator.Send(cmd));
     }
 }
