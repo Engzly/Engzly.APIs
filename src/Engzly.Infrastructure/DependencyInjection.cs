@@ -1,12 +1,12 @@
 ﻿using Engzly.Application.Interfaces;
-using Engzly.Application.Interfaces.Repositories;
 using Engzly.Application.Interfaces.Services;
 using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
 using Engzly.Domain.Entities.Identity;
 using Engzly.Infrastructure.Authentication;
 using Engzly.Infrastructure.Blobs;
+using Engzly.Infrastructure.Notifications;
 using Engzly.Infrastructure.Persistence.Data;
-using Engzly.Infrastructure.Persistence.Repositories;
+using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,8 +20,6 @@ public static class DependencyInjection
     {
         services.AddDbContext<EngzlyDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
-
-        services.AddScoped<IFileService, FileService>();
 
         services.AddIdentity<User, IdentityRole>(option =>
         {
@@ -50,7 +48,16 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IFileService, FileService>();
 
-        services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        services.AddMassTransit(config =>
+        {
+            config.UsingRabbitMq((context, options) =>
+            {
+                options.Host("rabbitmq://localhost");
+                options.ConfigureEndpoints(context);
+            });
+        });
+        services.AddScoped<INotificationService, NotificationService>();
+        
         return services;
     }
 }

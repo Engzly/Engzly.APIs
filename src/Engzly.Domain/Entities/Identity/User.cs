@@ -1,4 +1,5 @@
-﻿using Engzly.Domain.Enums;
+﻿using Engzly.Domain.Entities.Notifications;
+using Engzly.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 
 namespace Engzly.Domain.Entities.Identity
@@ -15,6 +16,7 @@ namespace Engzly.Domain.Entities.Identity
         public UserStatus Status { get; set; } = UserStatus.Pending;
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
+        public ICollection<Notification> Notifications { get; set; } = new HashSet<Notification>();
 
         //OTP
         public string? OtpHash { get; set; }

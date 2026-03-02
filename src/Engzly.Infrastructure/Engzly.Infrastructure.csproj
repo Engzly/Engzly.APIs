@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Engzly.Application\Engzly.Application.csproj" />
+      <ProjectReference Include="..\Engzly.Shared\Engzly.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>
@@ -22,7 +23,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Authorization\" />
+      <Folder Include="Notifications\ConsumerDefinitions\" />
+      <Folder Include="Notifications\Consumers\" />
+      <Folder Include="Notifications\Filters\" />
       <Folder Include="Persistence\Data\Migrations\" />
     </ItemGroup>
 
