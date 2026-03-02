@@ -1,4 +1,6 @@
 ﻿using Engzly.Application.Interfaces;
+using Engzly.Application.Interfaces.Authentication;
+using Engzly.Application.Interfaces.Repositories;
 using Engzly.Application.Interfaces.Services;
 using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
 using Engzly.Domain.Entities.Identity;
@@ -6,6 +8,7 @@ using Engzly.Infrastructure.Authentication;
 using Engzly.Infrastructure.Blobs;
 using Engzly.Infrastructure.Notifications;
 using Engzly.Infrastructure.Persistence.Data;
+using Engzly.Infrastructure.Persistence.Repositories;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -57,6 +60,9 @@ public static class DependencyInjection
             });
         });
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
+        
         
         return services;
     }

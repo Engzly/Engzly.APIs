@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 
-namespace Engzly.Application.Interfaces.Specifications
+namespace Engzly.Domain.Specifications
 {
     public abstract class BaseSpecification<T> : ISpecification<T>
     {

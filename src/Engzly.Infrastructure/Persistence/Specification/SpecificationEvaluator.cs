@@ -1,4 +1,4 @@
-﻿using Engzly.Application.Interfaces.Specifications;
+﻿using Engzly.Domain.Specifications;
 using Microsoft.EntityFrameworkCore;
 
 namespace Engzly.Infrastructure.Persistence.Specification

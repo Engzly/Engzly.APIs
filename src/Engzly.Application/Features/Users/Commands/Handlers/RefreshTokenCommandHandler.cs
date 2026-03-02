@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Engzly.Application.Common.Bases;
 using Engzly.Application.Features.Users.Commands.Models;
+using Engzly.Application.Interfaces.Authentication;
 using Engzly.Application.Interfaces.Services;
 using Engzly.Application.Responses.UsersResponse;
 using Engzly.Domain.Entities.Identity;
