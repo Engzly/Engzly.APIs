@@ -1,6 +1,9 @@
 ﻿using Engzly.Application.Interfaces;
-using Engzly.Application.Services;
+using Engzly.Application.Interfaces.Services;
+using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
 using Engzly.Domain.Entities.Identity;
+using Engzly.Infrastructure.Authentication;
+using Engzly.Infrastructure.Blobs;
 using Engzly.Infrastructure.Notifications;
 using Engzly.Infrastructure.Persistence.Data;
 using MassTransit;
@@ -43,6 +46,7 @@ public static class DependencyInjection
             .AddDefaultTokenProviders();
 
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IFileService, FileService>();
 
         services.AddMassTransit(config =>
         {

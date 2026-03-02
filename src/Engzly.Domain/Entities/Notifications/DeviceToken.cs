@@ -1,4 +1,6 @@
-﻿namespace Engzly.Domain.Entities.Notifications;
+﻿using Engzly.Domain.Entities.Common;
+
+namespace Engzly.Domain.Entities.Notifications;
 
 public class DeviceToken : BaseEntity<long>
 {

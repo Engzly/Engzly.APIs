@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
-using Engzly.Application.Bases;
+using Engzly.Application.Common.Bases;
 using Engzly.Application.Features.Users.Commands.Models;
 using Engzly.Application.Interfaces;
-using Engzly.Application.Responses;
+using Engzly.Application.Interfaces.Services;
+using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
+using Engzly.Application.Responses.UsersResponse;
 using Engzly.Domain.Entities.Identity;
 using Engzly.Domain.Enums;
 using MediatR;
@@ -10,7 +12,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Engzly.Application.Features.Users.Commands.Handlers
 {
-    public class CreateUserCommandHandler(UserManager<User> _userManager, IMapper _mapper, ITokenService tokenService) : ResponseHandler,
+    public class CreateUserCommandHandler(UserManager<User> _userManager, IMapper _mapper, ITokenService tokenService, IFileService _fileService) : ResponseHandler,
      IRequestHandler<CreateUserCommand, Response<CreateUserResponse>>
     {
 
@@ -23,7 +25,19 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
 
             //Logic to add user will be here
             var user = _mapper.Map<User>(request);
-            user.SetLocation(request.Latitude, request.Longitude);
+
+            //user.SetLocation(request.Latitude, request.Longitude); // If you have latitude and longitude in your request, you can set them here
+
+            if (request.ProfileImage != null)
+            {
+                var imageUrl = await _fileService.UploadFileAsync(request.ProfileImage, "Images");
+                user.ProfileImageUrl = imageUrl;
+            }
+            else
+            {
+                user.ProfileImageUrl = "/Images/default.png";
+            }
+
             var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
             {
@@ -32,15 +46,15 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
                 return BadRequest<CreateUserResponse>("Failed to create user", errors);
             }
 
-            // Fix : Set user status to Active and confirm email
+
             user.Status = UserStatus.Active;
             user.EmailConfirmed = true;
+
 
             var accessToken = await tokenService.GenerateJwtToken(user);
             user.RefreshToken = tokenService.GenerateRefreshToken();
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await _userManager.UpdateAsync(user);
-            //----------------------------------------
 
 
             var response = new CreateUserResponse
@@ -49,7 +63,8 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
                 AccessToken = accessToken,
                 RefreshToken = user.RefreshToken
             };
-            return Success(response, "User Created Successfully");
+
+            return Success(response, "User created successfully");
         }
     }
 }

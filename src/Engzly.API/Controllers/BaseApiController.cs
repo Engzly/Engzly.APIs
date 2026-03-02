@@ -1,5 +1,5 @@
 ﻿using System.Net;
-using Engzly.Application.Bases;
+using Engzly.Application.Common.Bases;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +10,7 @@ namespace Engzly.API.Controllers
     [ApiController]
     public abstract class BaseApiController : ControllerBase
     {
-        public IActionResult Resolve<T>(Response<T> response)
+        protected IActionResult Resolve<T>(Response<T> response)
         {
             switch (response.StatusCode)
             {

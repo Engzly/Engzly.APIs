@@ -1,4 +1,5 @@
-﻿using Engzly.Domain.Entities.Identity;
+﻿using Engzly.Domain.Entities.Common;
+using Engzly.Domain.Entities.Identity;
 
 namespace Engzly.Domain.Entities.Notifications;
 

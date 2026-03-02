@@ -14,7 +14,7 @@
             public const string list = prefix + "/list";
             public const string GetById = prefix + singleRoute;
             public const string Create = prefix + "/Register";
-            public const string Edit = prefix + "/Edite";
+            public const string Edit = prefix + "/Edit";
             public const string Delete = prefix + singleRoute;
             public const string ChangePassword = prefix + "/ChangePassword";
         }

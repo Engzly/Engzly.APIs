@@ -2,13 +2,12 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Engzly.Application.Config;
-using Engzly.Application.Interfaces;
+using Engzly.Application.Interfaces.Services;
 using Engzly.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Engzly.Application.Services
+namespace Engzly.Infrastructure.Authentication
 {
     public class TokenService(JwtSettings jwtSettings, UserManager<User> userManager) : ITokenService
     {

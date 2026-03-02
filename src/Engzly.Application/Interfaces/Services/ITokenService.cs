@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Engzly.Domain.Entities.Identity;
 
-namespace Engzly.Application.Interfaces
+namespace Engzly.Application.Interfaces.Services
 {
     public interface ITokenService
     {

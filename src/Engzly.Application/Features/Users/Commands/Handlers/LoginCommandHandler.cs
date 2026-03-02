@@ -1,11 +1,13 @@
-﻿using Engzly.Application.Bases;
+﻿using Engzly.Application.Common.Bases;
 using Engzly.Application.Features.Users.Commands.Models;
-using Engzly.Application.Interfaces;
-using Engzly.Application.Responses;
+using Engzly.Application.Interfaces.Services;
+using Engzly.Application.Responses.UsersResponse;
 using Engzly.Domain.Entities.Identity;
 using Engzly.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+
+namespace Engzly.Application.Features.Users.Commands.Handlers;
 
 public class LoginCommandHandler(
     UserManager<User> userManager,
