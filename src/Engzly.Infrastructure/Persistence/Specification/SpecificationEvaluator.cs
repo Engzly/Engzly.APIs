@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Engzly.Application.Interfaces.Specifications;
+﻿using Engzly.Application.Interfaces.Specifications;
 using Microsoft.EntityFrameworkCore;
 
-namespace Engzly.Infrastructure.Specifications
+namespace Engzly.Infrastructure.Persistence.Specification
 {
     public static class SpecificationEvaluator<T> where T : class
     {

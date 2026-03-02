@@ -7,7 +7,7 @@ using Engzly.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Engzly.Infrastructure.Services.Authentication
+namespace Engzly.Infrastructure.Authentication
 {
     public class TokenService(JwtSettings jwtSettings, UserManager<User> userManager) : ITokenService
     {

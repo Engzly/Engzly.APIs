@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using Engzly.Infrastructure.Services.Authentication;
+using Engzly.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;

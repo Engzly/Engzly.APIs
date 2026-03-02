@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 
-namespace Engzly.Infrastructure.Services
+namespace Engzly.Infrastructure.Blobs
 {
     public class FileService(IWebHostEnvironment _environment) : IFileService
     {

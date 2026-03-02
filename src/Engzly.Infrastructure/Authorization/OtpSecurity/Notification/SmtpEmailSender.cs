@@ -3,12 +3,11 @@ using System.Net.Mail;
 using Engzly.Application.Interfaces.Notifications;
 using Microsoft.Extensions.Options;
 
-namespace Engzly.Infrastructure.OtpSecurity.Notification
+namespace Engzly.Infrastructure.Authorization.OtpSecurity.Notification
 {
-  public class SmtpEmailSender : IEmailSender
-    {
-        private readonly SmtpOptions _opt;
-        public SmtpEmailSender(IOptions<SmtpOptions> opt) => _opt = opt.Value;
+  public class SmtpEmailSender(IOptions<SmtpOptions> opt) : IEmailSender
+  {
+        private readonly SmtpOptions _opt = opt.Value;
 
         public async Task SendAsync(string toEmail, string subject, string body, CancellationToken ct)
         {

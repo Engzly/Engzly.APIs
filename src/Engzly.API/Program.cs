@@ -4,8 +4,8 @@ using Engzly.Application;
 using Engzly.Application.Interfaces;
 using Engzly.Application.Interfaces.Notifications;
 using Engzly.Infrastructure;
-using Engzly.Infrastructure.OtpSecurity;
-using Engzly.Infrastructure.OtpSecurity.Notification;
+using Engzly.Infrastructure.Authorization.OtpSecurity;
+using Engzly.Infrastructure.Authorization.OtpSecurity.Notification;
 using Engzly.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 

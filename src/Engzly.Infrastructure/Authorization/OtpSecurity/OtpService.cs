@@ -1,35 +1,22 @@
-  using System;
-    using System.Security.Cryptography;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Engzly.Application.Interfaces;
-    using Engzly.Application.Interfaces.Notifications;
-    using Engzly.Domain.Entities.Identity;
-    using Engzly.Domain.Enums;
+using System.Security.Cryptography;
+using System.Text;
+using Engzly.Application.Interfaces;
+using Engzly.Application.Interfaces.Notifications;
+using Engzly.Domain.Entities.Identity;
+using Engzly.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 
-namespace Engzly.Infrastructure.OtpSecurity
+namespace Engzly.Infrastructure.Authorization.OtpSecurity
 {
   
 
-   public class OtpService : IOtpService
-    {
-        private readonly UserManager<User> _userManager;
-        private readonly IEmailSender _email;
-        private readonly IWhatsAppSender _whatsApp;
-
-        public OtpService(UserManager<User> userManager, IEmailSender email, IWhatsAppSender whatsApp)
-        {
-            _userManager = userManager;
-            _email = email;
-            _whatsApp = whatsApp;
-        }
-
-        public async Task<(bool ok, string? error)> SendOtpAsync(
+   public class OtpService(UserManager<User> userManager, IEmailSender email, IWhatsAppSender whatsApp)
+       : IOtpService
+   {
+       public async Task<(bool ok, string? error)> SendOtpAsync(
             string userId, OtpPurpose purpose, OtpChannel channel, string destination, CancellationToken ct)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await userManager.FindByIdAsync(userId);
             if (user == null) return (false, "User not found.");
 
             // resend cooldown 45 seconds
@@ -45,16 +32,16 @@ namespace Engzly.Infrastructure.OtpSecurity
             user.OtpChannel = channel;
             user.OtpLastSentAtUtc = DateTime.UtcNow;
 
-            var upd = await _userManager.UpdateAsync(user);
+            var upd = await userManager.UpdateAsync(user);
             if (!upd.Succeeded)
                 return (false, "Failed to save OTP on user.");
 
             var msg = $"Your code is: {code}. It expires in 5 minutes.";
 
             if (channel == OtpChannel.Email)
-                await _email.SendAsync(destination, "OTP Code", msg, ct);
+                await email.SendAsync(destination, "OTP Code", msg, ct);
             else
-                await _whatsApp.SendAsync(destination, msg, ct);
+                await whatsApp.SendAsync(destination, msg, ct);
 
             return (true, null);
         }
@@ -62,7 +49,7 @@ namespace Engzly.Infrastructure.OtpSecurity
         public async Task<(bool ok, string? error)> VerifyOtpAsync(
             string userId, OtpPurpose purpose, OtpChannel channel, string code, CancellationToken ct)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await userManager.FindByIdAsync(userId);
             if (user == null) return (false, "User not found.");
 
             if (user.OtpHash == null || user.OtpExpiresAtUtc == null)
@@ -81,7 +68,7 @@ namespace Engzly.Infrastructure.OtpSecurity
 
             if (!SlowEquals(user.OtpHash, Hash(code)))
             {
-                await _userManager.UpdateAsync(user);
+                await userManager.UpdateAsync(user);
                 return (false, "Invalid code.");
             }
 
@@ -92,7 +79,7 @@ namespace Engzly.Infrastructure.OtpSecurity
             user.OtpPurpose = null;
             user.OtpChannel = null;
 
-            await _userManager.UpdateAsync(user);
+            await userManager.UpdateAsync(user);
             return (true, null);
         }
 

@@ -1,6 +1,6 @@
 using Engzly.Application.Interfaces.Notifications;
 
-namespace Engzly.Infrastructure.OtpSecurity.Notification
+namespace Engzly.Infrastructure.Authorization.OtpSecurity.Notification
 {
     public class WhatsAppSender : IWhatsAppSender
     {

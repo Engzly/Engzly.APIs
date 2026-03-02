@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Engzly.Application.Interfaces.Repositories;
+﻿using Engzly.Application.Interfaces.Repositories;
 using Engzly.Application.Interfaces.Specifications;
 using Engzly.Infrastructure.Persistence.Data;
-using Engzly.Infrastructure.Specifications;
+using Engzly.Infrastructure.Persistence.Specification;
 using Microsoft.EntityFrameworkCore;
 
-namespace Engzly.Infrastructure.Repositories
+namespace Engzly.Infrastructure.Persistence.Repositories
 {
     public class GenericRepository<T>(EngzlyDbContext context) : IGenericRepository<T>
         where T : class

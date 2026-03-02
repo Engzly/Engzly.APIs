@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Engzly.Infrastructure.Services.Authentication
+﻿namespace Engzly.Infrastructure.Authentication
 {
     public class JwtSettings
     {
