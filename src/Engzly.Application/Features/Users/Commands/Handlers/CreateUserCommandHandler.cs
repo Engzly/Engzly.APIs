@@ -1,62 +1,88 @@
 ﻿using AutoMapper;
 using Engzly.Application.Common.Bases;
 using Engzly.Application.Features.Users.Commands.Models;
-using Engzly.Application.Interfaces;
 using Engzly.Application.Interfaces.Authentication;
-using Engzly.Application.Interfaces.Services;
 using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
 using Engzly.Application.Responses.UsersResponse;
 using Engzly.Domain.Entities.Identity;
 using Engzly.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace Engzly.Application.Features.Users.Commands.Handlers
 {
-    public class CreateUserCommandHandler(UserManager<User> _userManager, IMapper _mapper, ITokenService tokenService, IFileService _fileService) : ResponseHandler,
-     IRequestHandler<CreateUserCommand, Response<CreateUserResponse>>
+    public class CreateUserCommandHandler(
+        UserManager<User> userManager, 
+        IMapper mapper, 
+        ITokenService tokenService, 
+        IFileService fileService,
+        ILogger<CreateUserCommandHandler> logger)
+        : ResponseHandler,
+          IRequestHandler<CreateUserCommand, Response<CreateUserResponse>>
     {
-
         public async Task<Response<CreateUserResponse>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
+            logger.LogInformation(
+                "Attempting to create a new user with UserName {UserName}", 
+                request.UserName
+            );
 
-            var isUserNameExist = await _userManager.FindByNameAsync(request.UserName);
+            // Business Rule: Username must be unique
+            var isUserNameExist = await userManager.FindByNameAsync(request.UserName);
             if (isUserNameExist != null)
-                return BadRequest<CreateUserResponse>("User Name Is Exist Before You Can't Add This Account Again ");
+            {
+                logger.LogWarning(
+                    "User creation failed: UserName {UserName} already exists",
+                    request.UserName
+                );
+                return BadRequest<CreateUserResponse>("User Name already exists, cannot create duplicate account.");
+            }
 
-            //Logic to add user will be here
-            var user = _mapper.Map<User>(request);
+            // Map request to User entity
+            var user = mapper.Map<User>(request);
 
-            //user.SetLocation(request.Latitude, request.Longitude); // If you have latitude and longitude in your request, you can set them here
-
+            // Handle profile image upload
             if (request.ProfileImage != null)
             {
-                var imageUrl = await _fileService.UploadFileAsync(request.ProfileImage, "Images");
+                var imageUrl = await fileService.UploadFileAsync(request.ProfileImage, "Images");
                 user.ProfileImageUrl = imageUrl;
+                logger.LogInformation("Profile image uploaded for UserName {UserName}", request.UserName);
             }
             else
             {
                 user.ProfileImageUrl = "/Images/default.png";
+                logger.LogInformation("Default profile image set for UserName {UserName}", request.UserName);
             }
 
-            var result = await _userManager.CreateAsync(user, request.Password);
+            // Create user in Identity
+            var result = await userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
             {
-
                 var errors = result.Errors.Select(e => e.Description).ToList();
+                logger.LogWarning(
+                    "Failed to create user {UserName}. Errors: {Errors}", 
+                    request.UserName, 
+                    string.Join(", ", errors)
+                );
                 return BadRequest<CreateUserResponse>("Failed to create user", errors);
             }
 
-
+            // Set default user properties
             user.Status = UserStatus.Active;
             user.EmailConfirmed = true;
 
-
+            // Generate tokens
             var accessToken = await tokenService.GenerateJwtToken(user);
             user.RefreshToken = tokenService.GenerateRefreshToken();
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-            await _userManager.UpdateAsync(user);
+            await userManager.UpdateAsync(user);
 
+            logger.LogInformation(
+                "User {UserName} created successfully with Id {UserId}", 
+                request.UserName, 
+                user.Id
+            );
 
             var response = new CreateUserResponse
             {

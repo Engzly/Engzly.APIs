@@ -1,5 +1,4 @@
 ﻿using Engzly.Notification.Messaging.Consumers;
-using Engzly.Shared.Commands;
 using MassTransit;
 
 namespace Engzly.Notification.Messaging.ConsumerDefinitions;

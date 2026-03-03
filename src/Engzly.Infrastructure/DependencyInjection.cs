@@ -2,7 +2,6 @@
 using Engzly.Application.Interfaces.Authentication;
 using Engzly.Application.Interfaces.Notifications;
 using Engzly.Application.Interfaces.Repositories;
-using Engzly.Application.Interfaces.Services;
 using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
 using Engzly.Domain.Entities.Identity;
 using Engzly.Infrastructure.Authentication;

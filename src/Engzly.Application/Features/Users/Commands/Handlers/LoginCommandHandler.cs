@@ -1,55 +1,68 @@
 ﻿using Engzly.Application.Common.Bases;
 using Engzly.Application.Features.Users.Commands.Models;
 using Engzly.Application.Interfaces.Authentication;
-using Engzly.Application.Interfaces.Services;
 using Engzly.Application.Responses.UsersResponse;
 using Engzly.Domain.Entities.Identity;
 using Engzly.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace Engzly.Application.Features.Users.Commands.Handlers;
 
 public class LoginCommandHandler(
     UserManager<User> userManager,
     SignInManager<User> signInManager,
-    ITokenService tokenService) : ResponseHandler,
-    IRequestHandler<LoginCommand, Response<LoginResponse>>
+    ITokenService tokenService,
+    ILogger<LoginCommandHandler> logger)
+    : ResponseHandler,
+      IRequestHandler<LoginCommand, Response<LoginResponse>>
 {
-    private readonly UserManager<User> _userManager = userManager;
-    private readonly SignInManager<User> _signInManager = signInManager;
-    private readonly ITokenService _tokenService = tokenService;
-    
-    private const string InvalidEmailOrPassword = "Invalid Email or Password";
+    private const string InvalidEmailOrPassword = "Invalid Login";
 
     public async Task<Response<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
-        // Check Email If Exists
-        var user = await _userManager.FindByEmailAsync(request.Email);
-        if (user == null)
-            return BadRequest<LoginResponse>(InvalidEmailOrPassword);
+        logger.LogInformation("Login attempt for Email: {Email}", request.Email);
 
-        // Check Status
+        // Business Rule: Email must exist
+        var user = await userManager.FindByEmailAsync(request.Email);
+        if (user == null)
+        {
+            logger.LogWarning("Login failed: Email {Email} not found", request.Email);
+            return BadRequest<LoginResponse>(InvalidEmailOrPassword);
+        }
+
+        // Business Rule: User status must be Active
         if (user.Status != UserStatus.Active)
+        {
+            logger.LogWarning("Login failed: User {UserId} status is {Status}", user.Id, user.Status);
             return BadRequest<LoginResponse>("Account is not Active");
+        }
 
         // Check password
-        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+        var result = await signInManager.CheckPasswordSignInAsync(user, request.Password, false);
 
         if (result.IsLockedOut)
+        {
+            logger.LogWarning("Login failed: User {UserId} account is locked", user.Id);
             return BadRequest<LoginResponse>("Account is Locked. Try Again Later.");
+        }
 
         if (!result.Succeeded)
+        {
+            logger.LogWarning("Login failed: Invalid credentials for User {UserId}", user.Id);
             return BadRequest<LoginResponse>(InvalidEmailOrPassword);
+        }
 
-        // Generate Tokens
-        var jwtToken = await _tokenService.GenerateJwtToken(user);
-        var refreshToken = _tokenService.GenerateRefreshToken();
+        // Generate tokens
+        var jwtToken = await tokenService.GenerateJwtToken(user);
+        var refreshToken = tokenService.GenerateRefreshToken();
 
         user.RefreshToken = refreshToken;
         user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-        await _userManager.UpdateAsync(user);
+        await userManager.UpdateAsync(user);
 
+        logger.LogInformation("Login successful for User {UserId}", user.Id);
 
         var response = new LoginResponse
         {
@@ -60,7 +73,6 @@ public class LoginCommandHandler(
             RefreshToken = refreshToken
         };
 
-
-        return Success(response  , "Login Is Successfully");
+        return Success(response, "Login is successful");
     }
 }

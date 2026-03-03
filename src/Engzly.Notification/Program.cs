@@ -1,4 +1,3 @@
-using Engzly.Notification;
 using Engzly.Notification.Messaging.ConsumerDefinitions;
 using Engzly.Notification.Messaging.Consumers;
 using Engzly.Notification.Services;

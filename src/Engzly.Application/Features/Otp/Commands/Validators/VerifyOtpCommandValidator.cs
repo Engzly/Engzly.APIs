@@ -1,5 +1,4 @@
 using Engzly.Application.Features.Otp.Commands.Models;
-using Engzly.Domain.Enums;
 using FluentValidation;
 
 namespace Engzly.Application.Features.Otp.Commands.Validators

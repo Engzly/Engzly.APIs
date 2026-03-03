@@ -1,5 +1,4 @@
-﻿using Engzly.Domain.Entities;
-using Engzly.Domain.Entities.Common;
+﻿using Engzly.Domain.Entities.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

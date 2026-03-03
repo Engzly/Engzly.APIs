@@ -1,6 +1,5 @@
 ﻿using Engzly.Application.Features.Gigs.Queries.Models;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Engzly.API.Controllers

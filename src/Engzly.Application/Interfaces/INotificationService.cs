@@ -1,6 +1,4 @@
-﻿using Engzly.Domain.Entities.Notifications;
-
-namespace Engzly.Application.Interfaces;
+﻿namespace Engzly.Application.Interfaces;
 
 public interface INotificationService
 {

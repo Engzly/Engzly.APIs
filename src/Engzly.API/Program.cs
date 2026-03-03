@@ -1,11 +1,7 @@
 using Engzly.API;
 using Engzly.API.Middlewares;
 using Engzly.Application;
-using Engzly.Application.Interfaces;
-using Engzly.Application.Interfaces.Notifications;
 using Engzly.Infrastructure;
-using Engzly.Infrastructure.Authorization.OtpSecurity;
-using Engzly.Infrastructure.Authorization.OtpSecurity.Notification;
 using Engzly.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
