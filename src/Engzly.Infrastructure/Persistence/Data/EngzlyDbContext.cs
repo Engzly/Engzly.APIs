@@ -1,6 +1,7 @@
 ﻿using Engzly.Domain.Entities.Gigs;
 using Engzly.Domain.Entities.Identity;
 using Engzly.Domain.Entities.Notifications;
+using Engzly.Domain.Entities.Reviews;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,7 @@ namespace Engzly.Infrastructure.Persistence.Data
         public DbSet<Proposal> Proposals { get; private set; }
         public DbSet<Category> Categories { get; private set; }
         public DbSet<Notification> Notifications { get; private set; }
+        public DbSet<Review> Reviews { get; private set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

@@ -7,5 +7,5 @@ public sealed record PostReviewCommand(
         string ReviewedUserId,
         string GigId,
         string? Comment,
-        float Rating
+        decimal Rating
     ) : IRequest<string>;

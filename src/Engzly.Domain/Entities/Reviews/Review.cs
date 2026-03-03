@@ -10,7 +10,7 @@ public sealed class Review : BaseEntity<string>
     public string ReviewerId { get; set; } = null!;
     public string ReviewedUserId { get; set; } = null!;
     public string? Comment { get; set; }
-    public float Rating { get; set; }
+    public decimal Rating { get; set; }
 
     public Gig Gig { get; set; } = null!;
     public User Reviewer { get; set; } = null!;
