@@ -3,8 +3,6 @@ using Engzly.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
 
 namespace Engzly.API
 {
@@ -58,6 +56,7 @@ namespace Engzly.API
                 c.AddSecurityRequirement(securityReq);
             });
             services.AddHttpContextAccessor();
+            
             return services;
         }
     }

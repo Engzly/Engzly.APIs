@@ -1,7 +1,5 @@
 ﻿using System.Net;
 using Engzly.Application.Common.Bases;
-using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Engzly.API.Controllers

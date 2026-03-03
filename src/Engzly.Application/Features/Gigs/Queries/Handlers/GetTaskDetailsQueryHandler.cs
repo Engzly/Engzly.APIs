@@ -1,42 +1,72 @@
-﻿using System.Security.Claims;
-using AutoMapper;
+﻿using AutoMapper;
 using Engzly.Application.Common.Bases;
 using Engzly.Application.Features.Gigs.Queries.Models;
+using Engzly.Application.Interfaces.Authentication;
 using Engzly.Application.Interfaces.Repositories;
 using Engzly.Application.Responses.GigsResponse;
 using Engzly.Domain.Entities.Gigs;
 using Engzly.Domain.Specifications;
 using MediatR;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Engzly.Application.Features.Gigs.Queries.Handlers
 {
     public class GetTaskDetailsQueryHandler(
         IGenericRepository<Gig, string> repository,
         IMapper mapper,
-        IHttpContextAccessor httpContext)
-        : ResponseHandler,  
+        ICurrentUserService currentUserService,
+        ILogger<GetTaskDetailsQueryHandler> logger)
+        : ResponseHandler,
           IRequestHandler<GetTaskDetailsQuery, Response<TaskDetailedResponse>>
     {
         public async Task<Response<TaskDetailedResponse>> Handle(
             GetTaskDetailsQuery request,
             CancellationToken cancellationToken)
         {
-            var spec = new TaskDetailsSpecification(request.TaskId);
+            var currentUser = currentUserService.GetCurrentUser();
+            var currentUserId = currentUser.Id;
             
-            var task = await repository.GetByIdAsync(request.TaskId, spec, cancellationToken);
+            logger.LogInformation(
+                "Fetching task details. TaskId: {TaskId}, UserId: {UserId}",
+                request.TaskId,
+                currentUserId);
+
+            var spec = new TaskDetailsSpecification(request.TaskId);
+            var task = await repository.GetByIdAsync(
+                request.TaskId,
+                spec,
+                cancellationToken);
 
             if (task == null)
-                return NotFound<TaskDetailedResponse>("Task not found"); 
+            {
+                logger.LogWarning(
+                    "Task not found. TaskId: {TaskId}, RequestedBy: {UserId}",
+                    request.TaskId,
+                    currentUserId);
 
-            var currentUserId = httpContext.HttpContext?
-                .User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                return NotFound<TaskDetailedResponse>("Task not found");
+            }
 
             var result = mapper.Map<TaskDetailedResponse>(task);
-            result.IsAppliedByMe = task.TaskersAssignments.Any(x => x.TaskerId == currentUserId);
-            result.CurrentFilledCount = task.TaskersAssignments.Count;
 
-            return Success(result); 
+            result.IsAppliedByMe =
+                task.TaskersAssignments.Any(x => x.TaskerId == currentUserId);
+
+            result.CurrentFilledCount =
+                task.TaskersAssignments.Count;
+
+            logger.LogInformation(
+                "Task details retrieved successfully. TaskId: {TaskId}, FilledCount: {FilledCount}",
+                request.TaskId,
+                result.CurrentFilledCount);
+
+            logger.LogDebug(
+                "User application status checked. TaskId: {TaskId}, UserId: {UserId}, IsAppliedByMe: {IsApplied}",
+                request.TaskId,
+                currentUserId,
+                result.IsAppliedByMe);
+
+            return Success(result);
         }
     }
 }

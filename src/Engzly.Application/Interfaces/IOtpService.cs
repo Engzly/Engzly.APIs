@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Engzly.Domain.Entities.Identity;
 using Engzly.Domain.Enums;
 
 namespace Engzly.Application.Interfaces
