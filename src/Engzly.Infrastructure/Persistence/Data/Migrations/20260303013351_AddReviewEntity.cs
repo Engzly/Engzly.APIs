@@ -11,6 +11,28 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_AspNetUsers_Gigs_GigId",
+                table: "AspNetUsers");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_GigAssignments_Gigs_GigId",
+                table: "GigAssignments");
+
+            migrationBuilder.DropIndex(
+                name: "IX_AspNetUsers_GigId",
+                table: "AspNetUsers");
+
+            migrationBuilder.DropColumn(
+                name: "GigId",
+                table: "AspNetUsers");
+
+            migrationBuilder.AddColumn<string>(
+                name: "UserId",
+                table: "GigAssignments",
+                type: "nvarchar(450)",
+                nullable: true);
+
             migrationBuilder.CreateTable(
                 name: "Notifications",
                 columns: table => new
@@ -69,6 +91,11 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_GigAssignments_UserId",
+                table: "GigAssignments",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Notifications_UserId",
                 table: "Notifications",
                 column: "UserId");
@@ -88,16 +115,73 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                 table: "Reviews",
                 columns: new[] { "ReviewerId", "ReviewedUserId", "GigId" },
                 unique: true);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_GigAssignments_AspNetUsers_UserId",
+                table: "GigAssignments",
+                column: "UserId",
+                principalTable: "AspNetUsers",
+                principalColumn: "Id");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_GigAssignments_Gigs_GigId",
+                table: "GigAssignments",
+                column: "GigId",
+                principalTable: "Gigs",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_GigAssignments_AspNetUsers_UserId",
+                table: "GigAssignments");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_GigAssignments_Gigs_GigId",
+                table: "GigAssignments");
+
             migrationBuilder.DropTable(
                 name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "Reviews");
+
+            migrationBuilder.DropIndex(
+                name: "IX_GigAssignments_UserId",
+                table: "GigAssignments");
+
+            migrationBuilder.DropColumn(
+                name: "UserId",
+                table: "GigAssignments");
+
+            migrationBuilder.AddColumn<string>(
+                name: "GigId",
+                table: "AspNetUsers",
+                type: "nvarchar(450)",
+                nullable: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_GigId",
+                table: "AspNetUsers",
+                column: "GigId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_AspNetUsers_Gigs_GigId",
+                table: "AspNetUsers",
+                column: "GigId",
+                principalTable: "Gigs",
+                principalColumn: "Id");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_GigAssignments_Gigs_GigId",
+                table: "GigAssignments",
+                column: "GigId",
+                principalTable: "Gigs",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
         }
     }
 }

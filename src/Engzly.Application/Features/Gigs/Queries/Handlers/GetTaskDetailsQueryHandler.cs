@@ -33,8 +33,8 @@ namespace Engzly.Application.Features.Gigs.Queries.Handlers
                 .User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             var result = mapper.Map<TaskDetailedResponse>(task);
-            result.IsAppliedByMe = task.Taskers.Any(x => x.Id == currentUserId);
-            result.CurrentFilledCount = task.Taskers.Count;
+            result.IsAppliedByMe = task.TaskersAssignments.Any(x => x.TaskerId == currentUserId);
+            result.CurrentFilledCount = task.TaskersAssignments.Count;
 
             return Success(result); 
         }

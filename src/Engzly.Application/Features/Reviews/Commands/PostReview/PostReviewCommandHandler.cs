@@ -17,12 +17,12 @@ public sealed class PostReviewCommandHandler(
     public async Task<string> Handle(PostReviewCommand request, CancellationToken cancellationToken)
     {   
         // 1. Get the current LoggedIn User.
-        var currentUser =  currentUserService.GetCurrentUser();
+        //var currentUser =  currentUserService.GetCurrentUser();
         
         // 2. Fetch the Gig from the database.
         var spec = new GigForReviewEligibilitySpecification(
                 request.GigId,
-                currentUser.Id,
+                "user-123", //currentUser.Id,
                 request.ReviewedUserId
             );
         
@@ -37,7 +37,7 @@ public sealed class PostReviewCommandHandler(
         // 4. Initiate the Review Entity.
         var review = new Review()
         {
-            ReviewerId = currentUser.Id,
+            ReviewerId = "user-123",
             ReviewedUserId = request.ReviewedUserId,
             GigId = request.GigId,
             Comment = request.Comment,

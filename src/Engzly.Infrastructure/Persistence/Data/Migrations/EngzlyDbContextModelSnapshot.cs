@@ -123,9 +123,14 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TaskerId");
+
+                    b.HasIndex("UserId");
 
                     b.HasIndex("GigId", "TaskerId")
                         .IsUnique();
@@ -197,9 +202,6 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("GigId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -268,8 +270,6 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("GigId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -496,7 +496,7 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("Engzly.Domain.Entities.Identity.User", "Client")
-                        .WithMany()
+                        .WithMany("OwnedGigs")
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -533,9 +533,9 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
             modelBuilder.Entity("Engzly.Domain.Entities.Gigs.GigAssignment", b =>
                 {
                     b.HasOne("Engzly.Domain.Entities.Gigs.Gig", "Gig")
-                        .WithMany()
+                        .WithMany("TaskersAssignments")
                         .HasForeignKey("GigId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Engzly.Domain.Entities.Identity.User", "Tasker")
@@ -543,6 +543,10 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                         .HasForeignKey("TaskerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Engzly.Domain.Entities.Identity.User", null)
+                        .WithMany("GigsAssignments")
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Gig");
 
@@ -566,13 +570,6 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                     b.Navigation("Gig");
 
                     b.Navigation("Tasker");
-                });
-
-            modelBuilder.Entity("Engzly.Domain.Entities.Identity.User", b =>
-                {
-                    b.HasOne("Engzly.Domain.Entities.Gigs.Gig", null)
-                        .WithMany("Taskers")
-                        .HasForeignKey("GigId");
                 });
 
             modelBuilder.Entity("Engzly.Domain.Entities.Notifications.Notification", b =>
@@ -666,12 +663,16 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
 
             modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Gig", b =>
                 {
-                    b.Navigation("Taskers");
+                    b.Navigation("TaskersAssignments");
                 });
 
             modelBuilder.Entity("Engzly.Domain.Entities.Identity.User", b =>
                 {
+                    b.Navigation("GigsAssignments");
+
                     b.Navigation("Notifications");
+
+                    b.Navigation("OwnedGigs");
                 });
 #pragma warning restore 612, 618
         }

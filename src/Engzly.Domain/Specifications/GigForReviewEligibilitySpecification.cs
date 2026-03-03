@@ -13,15 +13,12 @@ public sealed class GigForReviewEligibilitySpecification : BaseSpecification<Gig
             g.Status == GigStatus.Completed &&
             (
                 (g.OwnerId == reviewerId && 
-                 g.Taskers.Any(t => t.Id == reviewedUserId))
+                 g.TaskersAssignments.Any(t => t.TaskerId == reviewedUserId))
                 ||
                 (g.OwnerId == reviewedUserId && 
-                 g.Taskers.Any(t => t.Id == reviewerId))
+                 g.TaskersAssignments.Any(t => t.TaskerId == reviewerId))
             )
         )
     {
-        // لو محتاج تحمل navigation properties
-        // AddInclude(g => g.Client);
-        // AddInclude(g => g.Freelancer);
     }
 }

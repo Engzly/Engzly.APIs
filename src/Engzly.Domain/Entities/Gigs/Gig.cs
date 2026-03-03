@@ -29,6 +29,6 @@ namespace Engzly.Domain.Entities.Gigs
 
         public User Client { get; set; } = null!;
         public Category Category { get; set; } = null!;
-        public ICollection<User> Taskers { get; set; } = null!;
+        public ICollection<GigAssignment> TaskersAssignments { get; set; } = null!;
     }
 }

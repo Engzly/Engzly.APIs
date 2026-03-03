@@ -8,7 +8,7 @@ namespace Engzly.Domain.Enums
 {
     public enum GigStatus
     {
-        Draft,
+        Draft = 1,
         Published,
         HelpersAssigned,
         InProgress,
