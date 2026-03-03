@@ -4,7 +4,7 @@ using Engzly.Infrastructure.Persistence.Data.Configurations.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Engzly.Infrastructure.Persistence.Data.Configurations.GigConfigurations
+namespace Engzly.Infrastructure.Persistence.Data.Configurations.Gigs
 {
     public sealed class GigConfiguration : BaseEntityConfigurations<Gig, string>
     {
@@ -30,8 +30,13 @@ namespace Engzly.Infrastructure.Persistence.Data.Configurations.GigConfiguration
             });
 
             builder.HasOne(g => g.Client)
-                .WithMany()
+                .WithMany(u => u.OwnedGigs)
                 .HasForeignKey(g => g.OwnerId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            builder.HasMany(g => g.TaskersAssignments)
+                .WithOne(a => a.Gig)
+                .HasForeignKey(g => g.GigId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(g => g.Category)

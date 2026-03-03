@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Engzly.Application.Interfaces.Authentication;
 using Engzly.Application.Interfaces.Services;
 using Engzly.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;

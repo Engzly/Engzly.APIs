@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Engzly.Domain.Entities.Gigs;
+﻿using Engzly.Domain.Entities.Gigs;
 
-namespace Engzly.Application.Interfaces.Specifications
+namespace Engzly.Domain.Specifications
 {
     public sealed class TaskDetailsSpecification : BaseSpecification<Gig>
     {
@@ -14,7 +9,7 @@ namespace Engzly.Application.Interfaces.Specifications
         {
             AddInclude(x => x.Category);
             AddInclude(x => x.Client);
-            AddInclude(x => x.Taskers);
+            AddInclude(x => x.TaskersAssignments);
         }
     }
 }

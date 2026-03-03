@@ -2,7 +2,7 @@
 using Engzly.Infrastructure.Persistence.Data.Configurations.Common;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Engzly.Infrastructure.Persistence.Data.Configurations.GigConfigurations;
+namespace Engzly.Infrastructure.Persistence.Data.Configurations.Gigs;
 
 public sealed class CategoryConfiguration : BaseEntityConfigurations<Category, string>
 {
