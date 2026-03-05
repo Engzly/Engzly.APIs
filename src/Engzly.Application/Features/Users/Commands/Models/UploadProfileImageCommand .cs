@@ -7,6 +7,5 @@ namespace Engzly.Application.Features.Users.Commands.Models
     public sealed class UploadProfileImageCommand : IRequest<Response<string>>
     {
         public IFormFile? Image { get; set; }
-        public string UserId { get; set; }
     }
 }

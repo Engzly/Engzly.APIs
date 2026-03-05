@@ -14,5 +14,20 @@ namespace Engzly.Domain.Entities.Gigs
 
         public Gig Gig { get; set; } = null!;
         public User Tasker { get; set; } = null!;
+
+
+
+        public static Proposal Create(string gigId, string taskerId, string message)
+        {
+            return new Proposal
+            {
+                Id = Guid.NewGuid().ToString(),
+                GigId = gigId,
+                TaskerId = taskerId,
+                Message = message,
+                Status = ProposalStatus.Pending,
+                SubmittedOn = DateTime.UtcNow
+            };
+        }
     }
 }

@@ -25,7 +25,7 @@ namespace Engzly.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, 
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services,
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
@@ -58,7 +58,7 @@ public static class DependencyInjection
 
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IFileService, FileService>();
-        
+
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IWhatsAppSender, WhatsAppSender>();
@@ -78,11 +78,11 @@ public static class DependencyInjection
         services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
 
         services.AddLogging(configuration, environment);
-        
+
         return services;
     }
 
-    private static IServiceCollection AddLogging(this IServiceCollection services, 
+    private static IServiceCollection AddLogging(this IServiceCollection services,
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
@@ -91,8 +91,8 @@ public static class DependencyInjection
             options.Enrich.FromLogContext()
                     .Enrich.WithEnvironmentName()
                     .Enrich.WithMachineName();
-            
-            options.WriteTo.Seq( configuration.GetConnectionString("Seq")!)
+
+            options.WriteTo.Seq(configuration.GetConnectionString("Seq")!)
                     .WriteTo.Console();
 
             options.MinimumLevel.Is(
