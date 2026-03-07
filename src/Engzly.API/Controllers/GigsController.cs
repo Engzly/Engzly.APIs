@@ -32,5 +32,20 @@ namespace Engzly.API.Controllers
             var result = await mediator.Send(command);
             return Resolve(result);
         }
+
+        [Authorize]
+        [HttpPatch("requests/{proposalId}")]
+        public async Task<IActionResult> DecideOnRequest([FromRoute] string proposalid, [FromBody] DecideOnProposalRequestModel command)
+        {
+
+            var _req = new DecideOnProposalCommand
+             (
+                 ProposalId: proposalid,
+                    CurrentUserId: User.FindFirstValue("sub"),
+                 Decision: command.Decision
+             );
+            var result = await mediator.Send((_req));
+            return Resolve(result);
+        }
     }
 }

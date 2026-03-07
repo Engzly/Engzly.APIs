@@ -58,7 +58,7 @@ public static class DependencyInjection
 
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IFileService, FileService>();
-
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IWhatsAppSender, WhatsAppSender>();

@@ -1,4 +1,6 @@
-﻿namespace Engzly.Application.Common.Bases
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Engzly.Application.Common.Bases
 {
     public abstract class ResponseHandler
     {
@@ -148,7 +150,15 @@
         }
 
 
-
+        public Response<T> InternalServerError<T>(string message = null)
+        {
+            return new Response<T>
+            {
+                StatusCode = StatusCodes.Status500InternalServerError,
+                Succeeded = false,
+                Message = message ?? "Internal Server Error"
+            };
+        }
 
         public Response<T> LoggedOutSuccessful<T>(T entity, object Meta = null)
         {
