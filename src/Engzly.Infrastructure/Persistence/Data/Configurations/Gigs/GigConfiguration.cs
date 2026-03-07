@@ -20,9 +20,12 @@ namespace Engzly.Infrastructure.Persistence.Data.Configurations.Gigs
                 .IsRequired()
                 .HasMaxLength(EngzlyDbContextSchemeConstants.MaxDescriptionLength);
 
-            builder.Property(g => g.ImageUrl)
-                .HasMaxLength(EngzlyDbContextSchemeConstants.MaxUrlLength);
-            
+            // Update Configuration for Medias
+            builder.HasMany(g => g.Medias)
+                   .WithOne(m => m.Gig)
+                   .HasForeignKey(m => m.GigId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
             builder.OwnsOne(g => g.Location, l =>
             {
                 l.Property(p => p.Latitude).HasColumnName(nameof(Location.Latitude));
@@ -33,7 +36,7 @@ namespace Engzly.Infrastructure.Persistence.Data.Configurations.Gigs
                 .WithMany(u => u.OwnedGigs)
                 .HasForeignKey(g => g.OwnerId)
                 .OnDelete(DeleteBehavior.Restrict);
-            
+
             builder.HasMany(g => g.TaskersAssignments)
                 .WithOne(a => a.Gig)
                 .HasForeignKey(g => g.GigId)

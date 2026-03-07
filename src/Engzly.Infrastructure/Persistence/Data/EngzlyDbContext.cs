@@ -15,6 +15,7 @@ namespace Engzly.Infrastructure.Persistence.Data
         public DbSet<Category> Categories { get; private set; }
         public DbSet<Notification> Notifications { get; private set; }
         public DbSet<Review> Reviews { get; private set; }
+        public DbSet<Media> Medias { get; private set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
