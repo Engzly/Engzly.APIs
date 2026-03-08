@@ -1,4 +1,6 @@
-﻿namespace Engzly.Application.Common.Bases
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Engzly.Application.Common.Bases
 {
     public abstract class ResponseHandler
     {
@@ -58,6 +60,15 @@
                 Message = "UnAuthorized"
             };
         }
+        public Response<T> Unauthorized<T>(string Message = null)
+        {
+            return new Response<T>()
+            {
+                StatusCode = (int)System.Net.HttpStatusCode.Unauthorized,
+                Succeeded = true,
+                Message = Message == null ? " UnAuthorized " : Message
+            };
+        }
         public Response<T> BadRequest<T>(string Message = null)
         {
             return new Response<T>()
@@ -109,6 +120,45 @@
             };
         }
 
+
+        public Response<T> Gone<T>(string message = null)
+        {
+            return new Response<T>()
+            {
+                StatusCode = (int)System.Net.HttpStatusCode.Gone,
+                Succeeded = false,
+                Message = message == null ? "Task Is Completed Or Canceled " : message
+            };
+        }
+        public Response<T> Forbidden<T>(string message = null)
+        {
+            return new Response<T>()
+            {
+                StatusCode = (int)System.Net.HttpStatusCode.Forbidden,
+                Succeeded = false,
+                Message = message == null ? "task Is Forbidden " : message
+            };
+        }
+        public Response<T> Conflict<T>(string message = null)
+        {
+            return new Response<T>()
+            {
+                StatusCode = (int)System.Net.HttpStatusCode.Conflict,
+                Succeeded = false,
+                Message = message == null ? "There Exist Conflict   " : message
+            };
+        }
+
+
+        public Response<T> InternalServerError<T>(string message = null)
+        {
+            return new Response<T>
+            {
+                StatusCode = StatusCodes.Status500InternalServerError,
+                Succeeded = false,
+                Message = message ?? "Internal Server Error"
+            };
+        }
 
         public Response<T> LoggedOutSuccessful<T>(T entity, object Meta = null)
         {

@@ -34,8 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="wwwroot\media\" />
-      <Folder Include="wwwroot\profile\" />
+      <Folder Include="wwwroot\" />
     </ItemGroup>
 
 </Project>

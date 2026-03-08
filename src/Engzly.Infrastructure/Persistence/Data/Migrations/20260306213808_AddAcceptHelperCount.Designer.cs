@@ -4,6 +4,7 @@ using Engzly.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Engzly.Infrastructure.Persistence.Data.Migrations
 {
     [DbContext(typeof(EngzlyDbContext))]
-    partial class EngzlyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260306213808_AddAcceptHelperCount")]
+    partial class AddAcceptHelperCount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -73,6 +76,11 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
 
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
 
                     b.Property<DateTime>("LastModifiedOn")
                         .HasColumnType("datetime2");
@@ -134,30 +142,6 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("GigAssignments");
-                });
-
-            modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Media", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("GigId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool>("IsTemp")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasMaxLength(2048)
-                        .HasColumnType("nvarchar(2048)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GigId");
-
-                    b.ToTable("Medias");
                 });
 
             modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Proposal", b =>
@@ -575,16 +559,6 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                     b.Navigation("Tasker");
                 });
 
-            modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Media", b =>
-                {
-                    b.HasOne("Engzly.Domain.Entities.Gigs.Gig", "Gig")
-                        .WithMany("Medias")
-                        .HasForeignKey("GigId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("Gig");
-                });
-
             modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Proposal", b =>
                 {
                     b.HasOne("Engzly.Domain.Entities.Gigs.Gig", "Gig")
@@ -695,8 +669,6 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
 
             modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Gig", b =>
                 {
-                    b.Navigation("Medias");
-
                     b.Navigation("TaskersAssignments");
                 });
 
