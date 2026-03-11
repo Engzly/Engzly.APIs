@@ -6,6 +6,7 @@
         Published,
         HelpersAssigned,
         InProgress,
+        PendingVerification,
         Completed,
         Canceled
     }

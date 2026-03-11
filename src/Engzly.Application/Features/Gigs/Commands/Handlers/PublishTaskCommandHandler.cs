@@ -19,11 +19,23 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
             var gig = _mapper.Map<Gig>(request);
             var now = DateTime.UtcNow;
 
-            gig.OwnerId = _currentUser.GetCurrentUser().Id;
+            var currentUser = _currentUser.GetCurrentUser();
+            if (currentUser == null)
+                return Unauthorized<string>();
+
+            gig.OwnerId = currentUser.Id;
             gig.Status = GigStatus.Published;
             gig.CreatedOn = now;
             gig.LastModifiedOn = now;
             gig.CompletedOn = default;
+            gig.Medias = request.MediaUrls?
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Select(url => new Media
+                {
+                    Url = url,
+                    IsTemp = false
+                })
+                .ToHashSet() ?? new HashSet<Media>();
 
             gig.Location = new Location(request.Latitude, request.Longitude);
 

@@ -25,9 +25,7 @@ public sealed class EngzlyProfile : Profile
 
  CreateMap<PublishTaskCommand, Gig>()
             .ForMember(d => d.Location, opt => opt.Ignore())
-
-            .ForMember(d => d.ImageUrl, opt => opt.MapFrom(s => s.ImageUrl ?? string.Empty))
-
+            .ForMember(d => d.Medias, opt => opt.Ignore())
             .ForMember(d => d.Id, opt => opt.Ignore())
             .ForMember(d => d.OwnerId, opt => opt.Ignore())
             .ForMember(d => d.Status, opt => opt.Ignore())
@@ -35,6 +33,19 @@ public sealed class EngzlyProfile : Profile
             .ForMember(d => d.LastModifiedOn, opt => opt.Ignore())
             .ForMember(d => d.CompletedOn, opt => opt.Ignore())
 
+            .ForMember(d => d.Client, opt => opt.Ignore())
+            .ForMember(d => d.Category, opt => opt.Ignore())
+            .ForMember(d => d.TaskersAssignments, opt => opt.Ignore());
+
+        CreateMap<EditTaskCommand, Gig>()
+            .ForMember(d => d.Location, opt => opt.Ignore())
+            .ForMember(d => d.Medias, opt => opt.Ignore())
+            .ForMember(d => d.Id, opt => opt.Ignore())
+            .ForMember(d => d.OwnerId, opt => opt.Ignore())
+            .ForMember(d => d.Status, opt => opt.Ignore())
+            .ForMember(d => d.CreatedOn, opt => opt.Ignore())
+            .ForMember(d => d.LastModifiedOn, opt => opt.Ignore())
+            .ForMember(d => d.CompletedOn, opt => opt.Ignore())
             .ForMember(d => d.Client, opt => opt.Ignore())
             .ForMember(d => d.Category, opt => opt.Ignore())
             .ForMember(d => d.TaskersAssignments, opt => opt.Ignore());

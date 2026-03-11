@@ -5,7 +5,7 @@ namespace Engzly.Application.Features.Gigs.Commands.Models
 {
      public sealed class  EditTaskCommand : IRequest<Response<string>>
     {
-          public string Id { get; set; } = null!;
+         public string Id { get; set; } = null!;
 
         public string Title { get; set; } = null!;
         public string Description { get; set; } = null!;
@@ -13,8 +13,7 @@ namespace Engzly.Application.Features.Gigs.Commands.Models
         public double Longitude { get; init; }
 
         public string CategoryId { get; set; } = null!;
-        public string ImageUrl { get; set; } = null!;
-
+       public List<string> MediaUrls { get; set; } = new();
         public int NumberOfTaskersNeeded { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime DueDate { get; set; }

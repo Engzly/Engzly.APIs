@@ -10,9 +10,9 @@ namespace Engzly.Application.Features.Gigs.Commands.Models
         public double Latitude { get; init; }
         public double Longitude { get; init; }
         public string CategoryId { get; set; } = null!;
-
-        public string ImageUrl { get; set; } = null!;
         public int NumberOfTaskersNeeded { get; set; }
+        public List<string> MediaUrls { get; set; } = new();
+
         public DateTime StartDate { get; set; }
         public DateTime DueDate { get; set; }
         public decimal Budget { get; set; }
@@ -20,3 +20,6 @@ namespace Engzly.Application.Features.Gigs.Commands.Models
 
     }
 }
+
+// Category Id ? 
+

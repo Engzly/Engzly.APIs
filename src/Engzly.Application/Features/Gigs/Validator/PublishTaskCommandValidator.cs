@@ -6,7 +6,7 @@ using Engzly.Domain.Entities.Gigs;
 using Engzly.Domain.Specifications;
 using FluentValidation;
 
-namespace Engzly.Application.Features.Gigs.Commands.Validators
+namespace Engzly.Application.Features.Gigs.Validator
 {
 public sealed class PublishTaskCommandValidator : AbstractValidator<PublishTaskCommand>
 {
@@ -37,12 +37,14 @@ public sealed class PublishTaskCommandValidator : AbstractValidator<PublishTaskC
             .MustAsync(async (categoryId, ct) =>
                 await categoryRepo.ExistsAsync(new CategoryByIdSpec(categoryId), ct))
             .WithMessage("CategoryId does not exist.");
+//Url
+            RuleFor(x => x.MediaUrls)
+                .Must(mediaUrls => mediaUrls == null || mediaUrls.Count <= 10)
+                .WithMessage("You can upload at most 10 media files.");
 
-        // Optional: allow null/empty or require valid URL if provided.
-        // If you store relative URLs, change Absolute -> RelativeOrAbsolute.
-        RuleFor(x => x.ImageUrl)
-            .Must(url => string.IsNullOrWhiteSpace(url) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
-            .WithMessage("ImageUrl must be a valid URL.");
+            RuleForEach(x => x.MediaUrls)
+                .Must(url => string.IsNullOrWhiteSpace(url) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
+                .WithMessage("Each media URL must be a valid absolute URL.");
 
         // Dates
         RuleFor(x => x.StartDate)
