@@ -16,7 +16,6 @@ namespace Engzly.Domain.Entities.Gigs
         public DateTime CreatedOn { get; set; }
         public DateTime LastModifiedOn { get; set; }
         public int NumberOfTaskersNeeded { get; set; }
-        public int AcceptedHelperCount { get; set; }
         public DateTime CompletedOn { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime DueDate { get; set; }
@@ -24,23 +23,27 @@ namespace Engzly.Domain.Entities.Gigs
 
         public User Client { get; set; } = null!;
         public Category Category { get; set; } = null!;
-        public ICollection<GigAssignment> TaskersAssignments { get; set; } = null!;
+        public ICollection<GigAssignment> TaskersAssignments { get; set; } = new List<GigAssignment>();
 
 
-        public void AcceptProposal()
+        public void AcceptProposal(string taskerId)
         {
             if (Status != GigStatus.Published)
                 throw new InvalidOperationException("You Can't Accept Task not Opened ");
 
-            AcceptedHelperCount++;
+            if (TaskersAssignments.Any(x => x.TaskerId == taskerId))
+                throw new InvalidOperationException("This Tasker already assigned");
 
-            if (AcceptedHelperCount > NumberOfTaskersNeeded)
+            if (TaskersAssignments.Count >= NumberOfTaskersNeeded)
                 throw new InvalidOperationException($"you Can't Accept Helpers more than {NumberOfTaskersNeeded}");
 
-            if (AcceptedHelperCount == NumberOfTaskersNeeded)
+
+            if (TaskersAssignments.Count == NumberOfTaskersNeeded)
             {
                 Status = GigStatus.Canceled;
             }
+
+
         }
     }
 }

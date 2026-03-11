@@ -7,9 +7,12 @@ namespace Engzly.Domain.Entities.Gigs
     {
         public string GigId { get; set; } = null!;
         public string TaskerId { get; set; } = null!;
+
+        public string ClientId { get; set; } = null!;
         public DateTime AssignedOn { get; set; }
 
         public Gig Gig { get; set; } = null!;
         public User Tasker { get; set; } = null!;
+        public User Client { get; set; } = null!;
     }
 }

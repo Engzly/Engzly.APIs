@@ -1,4 +1,5 @@
-﻿using Engzly.Domain.Entities.Common;
+﻿using System.Linq.Expressions;
+using Engzly.Domain.Entities.Common;
 using Engzly.Domain.Specifications;
 
 namespace Engzly.Application.Interfaces.Repositories
@@ -42,6 +43,6 @@ namespace Engzly.Application.Interfaces.Repositories
         public Task<int> CompleteAsync(
             CancellationToken cancellationToken = default);
 
-        Task<TEntity?> GetByIdLockedAsync(TKey id, CancellationToken ct = default);
+        Task<TEntity?> GetByIdLockedAsync(TKey id, CancellationToken ct = default, params Expression<Func<TEntity, object>>[] includes);
     }
 }

@@ -8,6 +8,7 @@ namespace Engzly.Application.Interfaces.Repositories
 
         IGenericRepository<Proposal, string> Proposals { get; }
         IGenericRepository<Gig, string> Gigs { get; }
+        IGenericRepository<GigAssignment, string> GigAssignments { get; }
 
 
         Task BeginTransactionAsync(CancellationToken cancellationToken = default);

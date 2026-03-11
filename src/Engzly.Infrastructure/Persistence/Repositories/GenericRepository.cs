@@ -1,4 +1,5 @@
-﻿using Engzly.Application.Interfaces.Repositories;
+﻿using System.Linq.Expressions;
+using Engzly.Application.Interfaces.Repositories;
 using Engzly.Domain.Entities.Common;
 using Engzly.Domain.Specifications;
 using Engzly.Infrastructure.Persistence.Data;
@@ -84,8 +85,10 @@ namespace Engzly.Infrastructure.Persistence.Repositories
 
 
 
-        public async Task<TEntity?> GetByIdLockedAsync(TKey id,
-            CancellationToken ct = default)
+        public async Task<TEntity?> GetByIdLockedAsync(
+           TKey id,
+           CancellationToken ct = default,
+           params Expression<Func<TEntity, object>>[] includes)
         {
             var entityType = _context.Model.FindEntityType(typeof(TEntity));
             if (entityType == null)
@@ -93,9 +96,17 @@ namespace Engzly.Infrastructure.Persistence.Repositories
 
             var tableName = entityType.GetTableName();
 
-            return await _context.Set<TEntity>()
-                .FromSqlRaw($"SELECT * FROM {tableName} WITH (UPDLOCK, ROWLOCK) WHERE Id = {{0}}", id)
-                .FirstOrDefaultAsync(ct);
+            IQueryable<TEntity> query = _context.Set<TEntity>()
+                  .FromSqlRaw($"SELECT * FROM {tableName} WITH (UPDLOCK, ROWLOCK) WHERE Id = {{0}}", id)
+                  .AsTracking();
+
+
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            return await query.FirstOrDefaultAsync(ct);
         }
     }
 }
