@@ -1,5 +1,6 @@
 ﻿using Engzly.Application.Features.Users.Commands.Models;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Engzly.API.Controllers
@@ -52,12 +53,15 @@ namespace Engzly.API.Controllers
             return Resolve(response);
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost("upload-profile-image")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadProfileImage([FromForm] UploadProfileImageCommand request)
         {
-            var result = await mediator.Send(new UploadProfileImageCommand { UserId = request.UserId, Image = request.Image });
+            var result = await mediator.Send(new UploadProfileImageCommand
+            {
+                Image = request.Image
+            });
             return Ok(result);
         }
 

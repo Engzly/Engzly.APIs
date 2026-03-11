@@ -15,7 +15,12 @@ namespace Engzly.API
             services.AddSingleton(jwtSettings);
 
             // 2️⃣ JWT Authentication
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;  // ← ده مهم جدًا
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
                 .AddJwtBearer(options =>
                 {
                     options.TokenValidationParameters = new TokenValidationParameters
@@ -28,6 +33,26 @@ namespace Engzly.API
                         ValidAudience = jwtSettings.Audience,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret))
                     };
+                    options.MapInboundClaims = false;
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnChallenge = context =>
+                        {
+                            context.HandleResponse();
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            context.Response.ContentType = "application/json";
+
+                            var response = new
+                            {
+                                statusCode = 401,
+                                succeeded = false,
+                                message = "Unauthorized - يجب تسجيل الدخول أولاً"
+                            };
+
+                            return context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
+                        }
+                    };
+
                 });
 
             // 3️⃣ Swagger
@@ -56,7 +81,7 @@ namespace Engzly.API
                 c.AddSecurityRequirement(securityReq);
             });
             services.AddHttpContextAccessor();
-            
+
             return services;
         }
     }

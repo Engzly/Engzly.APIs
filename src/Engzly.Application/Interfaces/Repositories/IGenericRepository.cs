@@ -3,7 +3,7 @@ using Engzly.Domain.Specifications;
 
 namespace Engzly.Application.Interfaces.Repositories
 {
-    public interface IGenericRepository<TEntity,TKey>
+    public interface IGenericRepository<TEntity, TKey>
         where TEntity : BaseEntity<TKey>
         where TKey : IEquatable<TKey>
     {
@@ -41,5 +41,7 @@ namespace Engzly.Application.Interfaces.Repositories
 
         public Task<int> CompleteAsync(
             CancellationToken cancellationToken = default);
+
+        Task<TEntity?> GetByIdLockedAsync(TKey id, CancellationToken ct = default);
     }
 }
