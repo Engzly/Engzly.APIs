@@ -48,7 +48,7 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
             if (_user == null)
                 return BadRequest<string>("User not found");
 
-            var imageUrl = await _fileStorage.UploadFileAsync(file, "Images");
+            var imageUrl = await _fileStorage.UploadFileAsync(file, "profile");
 
 
             _user.ProfileImageUrl = imageUrl;

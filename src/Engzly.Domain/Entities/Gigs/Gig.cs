@@ -11,7 +11,7 @@ namespace Engzly.Domain.Entities.Gigs
         public string Title { get; set; } = null!;
         public string Description { get; set; } = null!;
         public Location Location { get; set; }
-        public string ImageUrl { get; set; } = null!;
+        public ICollection<Media> Medias { get; set; } = new HashSet<Media>();
         public GigStatus Status { get; set; }
         public DateTime CreatedOn { get; set; }
         public DateTime LastModifiedOn { get; set; }
