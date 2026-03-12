@@ -7,6 +7,8 @@ namespace Engzly.Application.Responses.GigsResponse
     string ProposalId,
     ProposalStatus Decision,
     string TaskId,
-    string TaskStatus
+    string TaskStatus,
+    string? TaskerId,
+    string? ClientId
 );
 }

@@ -26,6 +26,8 @@ namespace Engzly.API.Controllers
                     return Accepted(string.Empty, response);
                 case (int)HttpStatusCode.UnprocessableEntity:
                     return UnprocessableEntity(response);
+                case (int)HttpStatusCode.Gone:
+                    return StatusCode((int)HttpStatusCode.Gone, response);
                 default:
                     return BadRequest(response);
             }

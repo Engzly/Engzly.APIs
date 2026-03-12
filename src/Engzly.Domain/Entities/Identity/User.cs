@@ -9,16 +9,16 @@ namespace Engzly.Domain.Entities.Identity
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        
+
         public string City { get; set; }
 
         //public Location Location { get; set; }
         public AccountType AccountType { get; set; }
-        public string? ProfileImageUrl { get; set; } 
+        public string? ProfileImageUrl { get; set; }
         public UserStatus Status { get; set; } = UserStatus.Pending;
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
-        
+
         public ICollection<Notification> Notifications { get; set; } = new HashSet<Notification>();
 
         //OTP
@@ -35,6 +35,7 @@ namespace Engzly.Domain.Entities.Identity
 
         public ICollection<Gig> OwnedGigs { get; set; } = new HashSet<Gig>();
         public ICollection<GigAssignment> GigsAssignments { get; set; } = new HashSet<GigAssignment>();
+        public ICollection<GigAssignment> AssignmentsAsClient { get; set; } = new HashSet<GigAssignment>();
 
         public void Delete()
         {

@@ -13,9 +13,9 @@ using Microsoft.Extensions.Logging;
 namespace Engzly.Application.Features.Users.Commands.Handlers
 {
     public class CreateUserCommandHandler(
-        UserManager<User> userManager, 
-        IMapper mapper, 
-        ITokenService tokenService, 
+        UserManager<User> userManager,
+        IMapper mapper,
+        ITokenService tokenService,
         IFileService fileService,
         ILogger<CreateUserCommandHandler> logger)
         : ResponseHandler,
@@ -24,7 +24,7 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
         public async Task<Response<CreateUserResponse>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
             logger.LogInformation(
-                "Attempting to create a new user with UserName {UserName}", 
+                "Attempting to create a new user with UserName {UserName}",
                 request.UserName
             );
 
@@ -42,27 +42,14 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
             // Map request to User entity
             var user = mapper.Map<User>(request);
 
-            // Handle profile image upload
-            if (request.ProfileImage != null)
-            {
-                var imageUrl = await fileService.UploadFileAsync(request.ProfileImage, "Images");
-                user.ProfileImageUrl = imageUrl;
-                logger.LogInformation("Profile image uploaded for UserName {UserName}", request.UserName);
-            }
-            else
-            {
-                user.ProfileImageUrl = "/Images/default.png";
-                logger.LogInformation("Default profile image set for UserName {UserName}", request.UserName);
-            }
-
             // Create user in Identity
             var result = await userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(e => e.Description).ToList();
                 logger.LogWarning(
-                    "Failed to create user {UserName}. Errors: {Errors}", 
-                    request.UserName, 
+                    "Failed to create user {UserName}. Errors: {Errors}",
+                    request.UserName,
                     string.Join(", ", errors)
                 );
                 return BadRequest<CreateUserResponse>("Failed to create user", errors);
@@ -79,8 +66,8 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
             await userManager.UpdateAsync(user);
 
             logger.LogInformation(
-                "User {UserName} created successfully with Id {UserId}", 
-                request.UserName, 
+                "User {UserName} created successfully with Id {UserId}",
+                request.UserName,
                 user.Id
             );
 

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Engzly.Infrastructure.Persistence.Data.Migrations
+namespace Engzly.Infrastructure.Migrations
 {
     [DbContext(typeof(EngzlyDbContext))]
     partial class EngzlyDbContextModelSnapshot : ModelSnapshot
@@ -48,9 +48,6 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("AcceptedHelperCount")
-                        .HasColumnType("int");
 
                     b.Property<decimal>("Budget")
                         .HasPrecision(18, 2)
@@ -113,6 +110,10 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                     b.Property<DateTime>("AssignedOn")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("GigId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -121,14 +122,11 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("TaskerId");
+                    b.HasIndex("ClientId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("TaskerId");
 
                     b.HasIndex("GigId", "TaskerId")
                         .IsUnique();
@@ -554,6 +552,12 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
 
             modelBuilder.Entity("Engzly.Domain.Entities.Gigs.GigAssignment", b =>
                 {
+                    b.HasOne("Engzly.Domain.Entities.Identity.User", "Client")
+                        .WithMany("AssignmentsAsClient")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Engzly.Domain.Entities.Gigs.Gig", "Gig")
                         .WithMany("TaskersAssignments")
                         .HasForeignKey("GigId")
@@ -561,14 +565,12 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("Engzly.Domain.Entities.Identity.User", "Tasker")
-                        .WithMany()
+                        .WithMany("GigsAssignments")
                         .HasForeignKey("TaskerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Engzly.Domain.Entities.Identity.User", null)
-                        .WithMany("GigsAssignments")
-                        .HasForeignKey("UserId");
+                    b.Navigation("Client");
 
                     b.Navigation("Gig");
 
@@ -702,6 +704,8 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
 
             modelBuilder.Entity("Engzly.Domain.Entities.Identity.User", b =>
                 {
+                    b.Navigation("AssignmentsAsClient");
+
                     b.Navigation("GigsAssignments");
 
                     b.Navigation("Notifications");

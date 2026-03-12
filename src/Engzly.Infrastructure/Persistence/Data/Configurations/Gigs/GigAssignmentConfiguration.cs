@@ -10,7 +10,7 @@ namespace Engzly.Infrastructure.Persistence.Data.Configurations.Gigs
         public override void Configure(EntityTypeBuilder<GigAssignment> builder)
         {
             base.Configure(builder);
-            
+
             builder.HasIndex(ga => new { ga.GigId, ga.TaskerId }).IsUnique();
 
             builder.HasOne(ga => ga.Gig)
@@ -19,10 +19,17 @@ namespace Engzly.Infrastructure.Persistence.Data.Configurations.Gigs
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(ga => ga.Tasker)
-                .WithMany()
+                .WithMany(u => u.GigsAssignments)
                 .HasForeignKey(ga => ga.TaskerId)
                 .OnDelete(DeleteBehavior.Restrict);
-        }
-    }
 
+            builder.HasOne(a => a.Client)
+                   .WithMany(u => u.AssignmentsAsClient)
+                   .HasForeignKey(a => a.ClientId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+
+        }
+
+    }
 }

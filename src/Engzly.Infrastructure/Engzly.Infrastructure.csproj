@@ -30,7 +30,6 @@
       <Folder Include="Notifications\ConsumerDefinitions\" />
       <Folder Include="Notifications\Consumers\" />
       <Folder Include="Notifications\Filters\" />
-      <Folder Include="Persistence\Data\Migrations\" />
     </ItemGroup>
 
 </Project>
