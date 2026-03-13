@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Engzly.Application.Interfaces.Services;
 using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
 using Engzly.Application.Responses.GigsResponse;
+using Engzly.Domain.Entities.Gigs;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 
@@ -55,7 +56,7 @@ namespace Engzly.Infrastructure.Blobs
                 var extension = Path.GetExtension(file.FileName).ToLower();
 
                 if (!allowedExtensions.Contains(extension))
-                    throw new Exception("Unsupported file format. Allowed: jpg, jpeg, png, heic");
+                    throw new Exception("Unsupported file format.");
 
                 if (file.Length > 5 * 1024 * 1024)
                     throw new Exception("File too large. Max size is 5MB.");
@@ -67,10 +68,22 @@ namespace Engzly.Infrastructure.Blobs
                 using var stream = new FileStream(fullPath, FileMode.Create);
                 await file.CopyToAsync(stream);
 
+                var relativeUrl = $"/media/{fileName}";
+
+                var media = new Media
+                {
+                    Id = mediaId,
+                    Url = relativeUrl,
+                    IsTemp = true, 
+                    GigId = null  
+                };
+
+               
+
                 responses.Add(new MediaUploadResponse
                 {
                     MediaId = mediaId,
-                    Url = $"/media/{fileName}"
+                    Url = relativeUrl
                 });
             }
 

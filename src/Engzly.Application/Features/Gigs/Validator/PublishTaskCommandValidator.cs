@@ -38,16 +38,20 @@ public sealed class PublishTaskCommandValidator : AbstractValidator<PublishTaskC
                 await categoryRepo.ExistsAsync(new CategoryByIdSpec(categoryId), ct))
             .WithMessage("CategoryId does not exist.");
 //Url
-            RuleFor(x => x.MediaUrls)
-                .Must(mediaUrls => mediaUrls == null || mediaUrls.Count <= 10)
+            RuleFor(x => x.MediaIds)
+                .Must(mediaIds => mediaIds == null || mediaIds.Count <= 10)
                 .WithMessage("You can upload at most 10 media files.");
 
-            RuleForEach(x => x.MediaUrls)
-                .Must(url => string.IsNullOrWhiteSpace(url) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
-                .WithMessage("Each media URL must be a valid absolute URL.");
+            RuleForEach(x => x.MediaIds)
+            .NotEmpty()
+            .WithMessage("Media Id cannot be empty.");
 
-        // Dates
-        RuleFor(x => x.StartDate)
+            //RuleForEach(x => x.MediaIds)
+            //    .Must(url => string.IsNullOrWhiteSpace(url) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
+            //    .WithMessage("Each media URL must be a valid absolute URL.");
+
+            // Dates
+            RuleFor(x => x.StartDate)
             .GreaterThanOrEqualTo(DateTime.UtcNow.AddMinutes(-1))
             .WithMessage("StartDate must be now or in the future.");
 

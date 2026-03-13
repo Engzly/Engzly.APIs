@@ -49,6 +49,8 @@ namespace Engzly.Application.Features.Gigs.Queries.Handlers
 
             var result = mapper.Map<TaskDetailedResponse>(task);
 
+            result.MediaUrls = task.Medias.Select(x => x.Url).ToList();
+
             result.IsAppliedByMe =
                 task.TaskersAssignments.Any(x => x.TaskerId == currentUserId);
 

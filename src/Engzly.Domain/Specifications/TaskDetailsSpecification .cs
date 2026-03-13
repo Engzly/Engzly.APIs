@@ -9,6 +9,7 @@ namespace Engzly.Domain.Specifications
         {
             AddInclude(x => x.Category);
             AddInclude(x => x.Client);
+            AddInclude(x => x.Medias);
             AddInclude(x => x.TaskersAssignments);
         }
     }

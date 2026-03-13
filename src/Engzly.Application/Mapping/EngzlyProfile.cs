@@ -17,7 +17,8 @@ public sealed class EngzlyProfile : Profile
                    .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
                    .ForMember(dest => dest.RequiredHelpers, opt => opt.MapFrom(src => src.NumberOfTaskersNeeded))
                    .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
-                   .ForMember(dest => dest.ClientInfo, opt => opt.MapFrom(src => src.Client));
+                   .ForMember(dest => dest.ClientInfo, opt => opt.MapFrom(src => src.Client))
+                   .ForMember(dest => dest.MediaUrls, opt => opt.MapFrom(src => src.Medias.Select(m => m.Url).ToList()));
 
         CreateMap<User, ClientInfoResponse>()
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.FirstName + " " + src.LastName));

@@ -11,7 +11,7 @@ namespace Engzly.Application.Features.Gigs.Commands.Models
         public double Longitude { get; init; }
         public string CategoryId { get; set; } = null!;
         public int NumberOfTaskersNeeded { get; set; }
-        public List<string> MediaUrls { get; set; } = new();
+        public List<Guid> MediaIds { get; set; } = new();
 
         public DateTime StartDate { get; set; }
         public DateTime DueDate { get; set; }
