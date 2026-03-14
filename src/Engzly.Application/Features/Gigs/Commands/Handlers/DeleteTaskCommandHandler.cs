@@ -1,4 +1,3 @@
-using AutoMapper;
 using Engzly.Application.Common.Bases;
 using Engzly.Application.Features.Gigs.Commands.Models;
 using Engzly.Application.Interfaces.Authentication;
@@ -9,11 +8,11 @@ using MediatR;
 
 namespace Engzly.Application.Features.Gigs.Commands.Handlers
 {
-    
-    public sealed class DeleteTaskCommandHandler(IGenericRepository<Gig, string> _gigRepo, ICurrentUserService _currentUser): ResponseHandler , IRequestHandler<DeleteTaskCommand, Response<string>>
+
+    public sealed class DeleteTaskCommandHandler(IGenericRepository<Gig, string> _gigRepo, ICurrentUserService _currentUser) : ResponseHandler, IRequestHandler<DeleteTaskCommand, Response<string>>
     {
 
- public async Task<Response<string>> Handle(DeleteTaskCommand request, CancellationToken cancellationToken)
+        public async Task<Response<string>> Handle(DeleteTaskCommand request, CancellationToken cancellationToken)
         {
             var gig = await _gigRepo.GetByIdAsync(
                 request.Id,
@@ -37,7 +36,7 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
             _gigRepo.Delete(gig);
             await _gigRepo.CompleteAsync(cancellationToken);
 
-            return Success(gig.Id, "Task deleted successfully");
+            return Deleted<string>();
         }
     }
 }

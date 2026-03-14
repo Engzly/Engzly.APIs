@@ -46,7 +46,7 @@ namespace Engzly.Application.Common.Bases
                 Data = entity,
                 StatusCode = (int)System.Net.HttpStatusCode.OK,
                 Succeeded = true,
-                Message = "User Deleted Successfully",
+                Message = $" Deleted Successfully",
                 Meta = Meta
             };
         }

@@ -16,28 +16,31 @@ namespace Engzly.API.Controllers
             var result = await _mediator.Send(new GetTaskDetailsQuery(id));
             return Resolve(result);
         }
-
-    [HttpPost("publish")]
+        [Authorize]
+        [HttpPost("publish")]
         public async Task<IActionResult> Publish([FromBody] PublishTaskCommand command)
         {
+
             var result = await _mediator.Send(command);
             return Resolve(result);
         }
 
-     [HttpPut("{id}")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> Edit(string id, [FromBody] EditTaskCommand command)
         {
-            command.Id = id; 
+            command.Id = id;
             var result = await _mediator.Send(command);
             return Resolve(result);
         }
 
+
+        [Authorize]
         [HttpDelete("{id}")]
-public async Task<IActionResult> Delete(string id)
-{
-    var result = await _mediator.Send(new DeleteTaskCommand(id));
-    return Resolve(result);
-}
+        public async Task<IActionResult> Delete(string id)
+        {
+            var result = await _mediator.Send(new DeleteTaskCommand(id));
+            return Resolve(result);
+        }
 
         [HttpPost("upload-media")]
         [Consumes("multipart/form-data")]
@@ -50,7 +53,7 @@ public async Task<IActionResult> Delete(string id)
 
             return Created("", result.Data);
         }
-      
+
         [HttpPost("{id}/complete")]
         public async Task<IActionResult> Complete(string id)
         {
@@ -64,7 +67,7 @@ public async Task<IActionResult> Delete(string id)
             var result = await _mediator.Send(new VerifyTaskCommand(id));
             return Resolve(result);
         }
-      
+
 
 
 

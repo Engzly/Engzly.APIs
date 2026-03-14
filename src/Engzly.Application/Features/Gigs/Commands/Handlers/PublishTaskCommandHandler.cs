@@ -1,43 +1,22 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using AutoMapper;
-using Engzly.Application.Common.Bases;
-using Engzly.Application.Features.Gigs.Commands.Models;
-using Engzly.Application.Interfaces.Authentication;
-using Engzly.Application.Interfaces.Repositories;
-using Engzly.Domain.Entities.Common;
-using Engzly.Domain.Entities.Gigs;
-using Engzly.Domain.Enums;
-using MediatR;
-
 namespace Engzly.Application.Features.Gigs.Commands.Handlers
 {
-    public sealed class PublishTaskCommandHandler
-        : ResponseHandler,
-          IRequestHandler<PublishTaskCommand, Response<string>>
+    using System.Threading;
+    using System.Threading.Tasks;
+    using AutoMapper;
+    using Engzly.Application.Common.Bases;
+    using Engzly.Application.Features.Gigs.Commands.Models;
+    using Engzly.Application.Interfaces.Authentication;
+    using Engzly.Application.Interfaces.Repositories;
+    using Engzly.Domain.Entities.Common;
+    using Engzly.Domain.Entities.Gigs;
+    using Engzly.Domain.Entities.Identity;
+    using Engzly.Domain.Enums;
+    using MediatR;
+    using Microsoft.AspNetCore.Identity;
+
+    public sealed class PublishTaskCommandHandler(IGenericRepository<Gig, string> _gigRepo, ICurrentUserService _currentUser, UserManager<User> _userManger, IMapper _mapper, IGenericRepository<Media, Guid> _mediaRepo) : ResponseHandler, IRequestHandler<PublishTaskCommand, Response<string>>
     {
-        private readonly IGenericRepository<Gig, string> _gigRepo;
-        private readonly IGenericRepository<Media, Guid> _mediaRepo;
-        private readonly ICurrentUserService _currentUser;
-        private readonly IMapper _mapper;
-
-        public PublishTaskCommandHandler(
-            IGenericRepository<Gig, string> gigRepo,
-            IGenericRepository<Media, Guid> mediaRepo,
-            ICurrentUserService currentUser,
-            IMapper mapper)
-        {
-            _gigRepo = gigRepo;
-            _mediaRepo = mediaRepo;
-            _currentUser = currentUser;
-            _mapper = mapper;
-        }
-
-        public async Task<Response<string>> Handle(
-            PublishTaskCommand request,
-            CancellationToken cancellationToken)
+        public async Task<Response<string>> Handle(PublishTaskCommand request, CancellationToken cancellationToken)
         {
             var gig = _mapper.Map<Gig>(request);
 
@@ -48,7 +27,12 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
             if (currentUser == null)
                 return Unauthorized<string>();
 
-           
+            var _user = await _userManger.FindByIdAsync(currentUser.Id);
+
+            if (_user.AccountType != AccountType.Client)
+                return Unauthorized<string>("You an Authorized TO Publish Task You Must Create Client Account ");
+
+
             gig.Id = Guid.NewGuid().ToString();
 
             gig.OwnerId = currentUser.Id;
