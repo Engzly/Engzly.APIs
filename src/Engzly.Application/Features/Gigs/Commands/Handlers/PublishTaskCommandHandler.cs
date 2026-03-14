@@ -9,10 +9,12 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
     using Engzly.Application.Interfaces.Repositories;
     using Engzly.Domain.Entities.Common;
     using Engzly.Domain.Entities.Gigs;
+    using Engzly.Domain.Entities.Identity;
     using Engzly.Domain.Enums;
     using MediatR;
+    using Microsoft.AspNetCore.Identity;
 
-    public sealed class PublishTaskCommandHandler(IGenericRepository<Gig, string> _gigRepo, ICurrentUserService _currentUser, IMapper _mapper) : ResponseHandler, IRequestHandler<PublishTaskCommand, Response<string>>
+    public sealed class PublishTaskCommandHandler(IGenericRepository<Gig, string> _gigRepo, ICurrentUserService _currentUser, UserManager<User> _userManger, IMapper _mapper) : ResponseHandler, IRequestHandler<PublishTaskCommand, Response<string>>
     {
         public async Task<Response<string>> Handle(PublishTaskCommand request, CancellationToken cancellationToken)
         {
@@ -22,6 +24,11 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
             var currentUser = _currentUser.GetCurrentUser();
             if (currentUser == null)
                 return Unauthorized<string>();
+
+            var _user = await _userManger.FindByIdAsync(currentUser.Id);
+
+            if (_user.AccountType != AccountType.Client)
+                return Unauthorized<string>("You an Authorized TO Publish Task You Must Create Client Account ");
 
             gig.OwnerId = currentUser.Id;
             gig.Status = GigStatus.Published;
