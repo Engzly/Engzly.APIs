@@ -30,6 +30,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Engzly.DTOs\Engzly.DTOs.csproj" />
       <ProjectReference Include="..\Engzly.Infrastructure\Engzly.Infrastructure.csproj" />
     </ItemGroup>
 

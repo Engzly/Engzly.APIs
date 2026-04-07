@@ -9,25 +9,26 @@ using MediatR;
 
 namespace Engzly.Application.Features.Gigs.Commands.Handlers
 {
-public sealed class CompleteTaskCommandHandler(
-        IGenericRepository<Gig, string> _gigRepo,
-        ICurrentUserService _currentUser)
-        : ResponseHandler, IRequestHandler<CompleteTaskCommand, Response<string>>    {
+    public sealed class CompleteTaskCommandHandler(
+            IGenericRepository<Gig, string> _gigRepo,
+            ICurrentUserService _currentUser)
+            : ResponseHandler, IRequestHandler<CompleteTaskCommand, Response<string>>
+    {
         public async Task<Response<string>> Handle(CompleteTaskCommand request, CancellationToken cancellationToken)
         {
-            var gig = await _gigRepo.GetByIdAsync(request.Id, new GigWithAssignmentsByIdSpecification(), cancellationToken); 
+            var gig = await _gigRepo.GetByIdAsync(request.Id, new GigWithAssignmentsByIdSpecification(), cancellationToken);
 
-            if(gig is null )
-            return NotFound<string>("Task not found");
+            if (gig is null)
+                return NotFound<string>("Task not found");
 
-            var currentUserId = _currentUser.GetCurrentUser().Id ;
+            var currentUserId = _currentUser.GetCurrentUser().Id;
 
-             var assignment = gig.TaskersAssignments.FirstOrDefault(a => a.TaskerId == currentUserId);
-             
-             if(assignment is null)
-             {
-                 return Unauthorized<string>();
-             }
+            var assignment = gig.TaskersAssignments.FirstOrDefault(a => a.TaskerId == currentUserId);
+
+            if (assignment is null)
+            {
+                return Unauthorized<string>();
+            }
 
             if (gig.OwnerId == currentUserId)
                 return Unauthorized<string>();
@@ -38,14 +39,14 @@ public sealed class CompleteTaskCommandHandler(
             if (assignment.IsCompletedByTasker)
                 return BadRequest<string>("You have already marked this task as complete.");
 
-             assignment.IsCompletedByTasker = true;
-             assignment.CompletedByTaskerOn = DateTime.UtcNow;
+            assignment.IsCompletedByTasker = true;
+            assignment.CompletedByTaskerOn = DateTime.UtcNow;
 
-                // Check if all taskers have completed the task
-                var AllTaskersCompleted = gig.TaskersAssignments.All(a=>a.IsCompletedByTasker == true ); 
-        
-                if(AllTaskersCompleted)
-                 gig.Status = GigStatus.PendingVerification;
+            // Check if all taskers have completed the task
+            var AllTaskersCompleted = gig.TaskersAssignments.All(a => a.IsCompletedByTasker == true);
+
+            if (AllTaskersCompleted)
+                gig.Status = GigStatus.PendingVerification;
 
             _gigRepo.Update(gig);
             await _gigRepo.CompleteAsync(cancellationToken);
@@ -54,10 +55,10 @@ public sealed class CompleteTaskCommandHandler(
             return Success(gig.Id, message);
         }
     }
-    
+
 
 
 
 }
-    
+
 

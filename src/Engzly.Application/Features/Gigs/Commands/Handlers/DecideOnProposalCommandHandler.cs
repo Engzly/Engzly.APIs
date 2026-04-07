@@ -1,5 +1,6 @@
 ﻿using Engzly.Application.Common.Bases;
 using Engzly.Application.Features.Gigs.Commands.Models;
+using Engzly.Application.Interfaces.Authentication;
 using Engzly.Application.Interfaces.Repositories;
 using Engzly.Application.Responses.GigsResponse;
 using Engzly.Domain.Entities.Gigs;
@@ -9,7 +10,7 @@ using MediatR;
 
 namespace Engzly.Application.Features.Gigs.Commands.Handlers
 {
-    public class DecideOnProposalCommandHandler(IUnitOfWork _unitOfWork) : ResponseHandler, IRequestHandler<DecideOnProposalCommand, Response<DecideOnProposalResponse>>
+    public class DecideOnProposalCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _currentUser) : ResponseHandler, IRequestHandler<DecideOnProposalCommand, Response<DecideOnProposalResponse>>
     {
 
         public async Task<Response<DecideOnProposalResponse>> Handle(DecideOnProposalCommand request, CancellationToken ct)
@@ -17,6 +18,11 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
             var _proposalsRepo = _unitOfWork.Proposals;
             var _gigsRepo = _unitOfWork.Gigs;
             var _gigAssignmentRepo = _unitOfWork.GigAssignments;
+
+
+            var currentUser = _currentUser.GetCurrentUser();
+            if (string.IsNullOrWhiteSpace(currentUser.Id))
+                return Unauthorized<DecideOnProposalResponse>(" Must Login First ");
 
             var proposal = await _unitOfWork.Proposals.GetByIdAsync(request.ProposalId, ct);
             if (proposal is null)
@@ -26,7 +32,7 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
             if (gig is null)
                 return NotFound<DecideOnProposalResponse>($"Task with Id {gig?.Id} Not Exist ");
 
-            var currentUserId = request.CurrentUserId;
+            var currentUserId = currentUser.Id;
             if (currentUserId != gig.OwnerId)
                 return Forbidden<DecideOnProposalResponse>("You Don't Have Permision to Make Any Changes on this Task ");
 
@@ -54,7 +60,7 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
                             ClientId = gig.OwnerId
                         };
                         await _gigAssignmentRepo.AddAsync(assignment);
-                        await _gigAssignmentRepo.CompleteAsync(ct);
+                        gig.Status = GigStatus.HelpersAssigned;
                         break;
 
                     case ProposalStatus.Rejected:
@@ -69,8 +75,6 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
                 _gigsRepo.Update(gig);
 
                 await _proposalsRepo.CompleteAsync(ct);
-                await _gigsRepo.CompleteAsync(ct);
-
 
                 await _unitOfWork.CommitTransactionAsync(ct);
                 var res = new DecideOnProposalResponse(

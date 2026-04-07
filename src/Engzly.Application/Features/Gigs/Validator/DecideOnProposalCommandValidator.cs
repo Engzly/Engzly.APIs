@@ -12,10 +12,6 @@ namespace Engzly.Application.Features.Gigs.Validator
                 .NotEmpty().WithMessage("You must Enter the Proposal ID ")
                 .NotNull().WithMessage("Proposal Id Mustn't be Null  ");
 
-            RuleFor(x => x.CurrentUserId)
-                .NotEmpty().WithMessage("Current User Id Must Have Value So You Need to Login ")
-                .NotNull().WithMessage("User Id Mustn't be Null ");
-
             RuleFor(x => x.Decision)
                 .IsInEnum().WithMessage("You Must Choose Existing Decision Status ")
                 .Must(d => d == ProposalStatus.Approved || d == ProposalStatus.Rejected)

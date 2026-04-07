@@ -7,7 +7,6 @@ namespace Engzly.Application.Features.Gigs.Commands.Models
 {
     public record DecideOnProposalCommand(
     string ProposalId,
-     string CurrentUserId,
     ProposalStatus Decision
 ) : IRequest<Response<DecideOnProposalResponse>>;
 }

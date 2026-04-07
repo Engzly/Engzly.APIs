@@ -1,7 +1,7 @@
-using System.Security.Claims;
-using Engzly.API.RequestsModels.GigRequestsModels;
 using Engzly.Application.Features.Gigs.Commands.Models;
 using Engzly.Application.Features.Gigs.Queries.Models;
+using Engzly.Domain.Enums;
+using Engzly.DTOs.GigDTOS;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,10 +25,11 @@ namespace Engzly.API.Controllers
             return Resolve(result);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Edit(string id, [FromBody] EditTaskCommand command)
+        [Authorize]
+        [HttpPut("editegig/{gigid}")]
+        public async Task<IActionResult> Edit(string gigid, [FromBody] EditTaskCommand command)
         {
-            command.Id = id;
+            command.Id = gigid;
             var result = await _mediator.Send(command);
             return Resolve(result);
         }
@@ -54,6 +55,8 @@ namespace Engzly.API.Controllers
             return Created("", result.Data);
         }
 
+
+        [Authorize]
         [HttpPost("{id}/complete")]
         public async Task<IActionResult> Complete(string id)
         {
@@ -61,6 +64,7 @@ namespace Engzly.API.Controllers
             return Resolve(result);
         }
 
+        [Authorize]
         [HttpPost("{id}/verify")]
         public async Task<IActionResult> Verify(string id)
         {
@@ -74,30 +78,27 @@ namespace Engzly.API.Controllers
 
         [Authorize]
         [HttpPost("{gigId}/apply")]
-        public async Task<IActionResult> SubmitProposal([FromRoute] string gigId, [FromBody] SubmitProposalRequestModel request)
+        public async Task<IActionResult> SubmitProposal([FromRoute] string gigId, [FromBody] SubmitProposalDto massage)
         {
 
-            var command = new SubmitProposalCommand
+            var _command = new SubmitProposalCommand
             (
                 GigId: gigId,
-                CurrentUserId: User.FindFirstValue("sub"),
-                Message: request.Message
+                Message: massage.Message
             );
-
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(_command);
             return Resolve(result);
         }
 
         [Authorize]
         [HttpPatch("requests/{proposalId}")]
-        public async Task<IActionResult> DecideOnRequest([FromRoute] string proposalid, [FromBody] DecideOnProposalRequestModel command)
+        public async Task<IActionResult> DecideOnRequest([FromRoute] string proposalid, [FromBody] DecideOnProposalDto command)
         {
 
             var _req = new DecideOnProposalCommand
              (
                  ProposalId: proposalid,
-                    CurrentUserId: User.FindFirstValue("sub"),
-                 Decision: command.Decision
+                 Decision: (ProposalStatus)command.Decision
              );
             var result = await _mediator.Send((_req));
             return Resolve(result);

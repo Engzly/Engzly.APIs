@@ -7,7 +7,6 @@ namespace Engzly.Application.Features.Gigs.Commands.Models
 
     public sealed record SubmitProposalCommand(
         string GigId,
-        string CurrentUserId,
         string Message
     ) : IRequest<Response<SubmitProposalResponse>>;
 }
