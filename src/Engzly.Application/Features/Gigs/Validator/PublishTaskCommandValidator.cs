@@ -32,10 +32,10 @@ public sealed class PublishTaskCommandValidator : AbstractValidator<PublishTaskC
         RuleFor(x => x.Longitude)
             .InclusiveBetween(-180, 180);
 
-        RuleFor(x => x.CategoryId)
-            .NotEmpty()
+        RuleFor(x => x.CategoryId!)
             .MustAsync(async (categoryId, ct) =>
                 await categoryRepo.ExistsAsync(new CategoryByIdSpec(categoryId), ct))
+            .When(x => !string.IsNullOrWhiteSpace(x.CategoryId))
             .WithMessage("CategoryId does not exist.");
 //Url
             RuleFor(x => x.MediaIds)
