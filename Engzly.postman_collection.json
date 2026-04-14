@@ -16,7 +16,9 @@
     { "key": "verificationId", "value": "", "type": "string" },
     { "key": "categoryId", "value": "delivery", "type": "string" },
     { "key": "reviewedUserId", "value": "", "type": "string" },
-    { "key": "notificationId", "value": "", "type": "string" }
+    { "key": "notificationId", "value": "", "type": "string" },
+    { "key": "conversationId", "value": "", "type": "string" },
+    { "key": "otherUserId", "value": "", "type": "string" }
   ],
   "auth": {
     "type": "bearer",
@@ -837,6 +839,148 @@
       ]
     },
     {
+      "name": "Chat",
+      "description": "Chat system (4.1.4). Supports text, image, and location messaging, a curated AI chatbot, and real-time delivery via SignalR hub at /hubs/chat. All endpoints require JWT auth.",
+      "item": [
+        {
+          "name": "List My Conversations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/chat/conversations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chat", "conversations"]
+            }
+          }
+        },
+        {
+          "name": "Start Conversation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json && json.data) pm.collectionVariables.set('conversationId', json.data);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/chat/conversations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chat", "conversations"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"otherUserId\": \"{{otherUserId}}\",\n  \"gigId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Conversation Messages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/chat/conversations/{{conversationId}}/messages?page=1&pageSize=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chat", "conversations", "{{conversationId}}", "messages"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "50" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Send Text Message",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/chat/messages/text",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chat", "messages", "text"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": \"{{conversationId}}\",\n  \"text\": \"Hi, are you available tomorrow morning?\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Send Image Message",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/chat/messages/image",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chat", "messages", "image"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "conversationId", "value": "{{conversationId}}", "type": "text" },
+                { "key": "image", "type": "file", "src": [] }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Send Location Message",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/chat/messages/location",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chat", "messages", "location"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": \"{{conversationId}}\",\n  \"latitude\": 30.0444,\n  \"longitude\": 31.2357\n}"
+            }
+          }
+        },
+        {
+          "name": "Mark Conversation Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/chat/conversations/{{conversationId}}/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chat", "conversations", "{{conversationId}}", "read"]
+            }
+          }
+        },
+        {
+          "name": "Ask Chatbot",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/chat/bot/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chat", "bot", "ask"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"How do I create a new task on Engzly?\"\n}"
+            },
+            "description": "Calls the in-app AI assistant. The .NET API persists both the user message and the bot reply to a dedicated bot conversation, then proxies to the Python /chat endpoint which runs an embedding-based FAQ matcher over a curated Engzly knowledge base."
+          }
+        }
+      ]
+    },
+    {
       "name": "CategoryAI (Python Service)",
       "description": "Direct calls to the FastAPI classification microservice. Uses categoryAiBaseUrl (default http://localhost:8000). No auth.",
       "item": [
@@ -874,6 +1018,20 @@
               "raw": "{\n  \"title\": \"Deliver groceries from Carrefour to Zamalek\",\n  \"description\": \"Medium shopping cart, two bags, ground floor pickup and fifth floor delivery.\",\n  \"number_of_taskers_needed\": 1,\n  \"top_k\": 5,\n  \"category_id\": \"delivery\",\n  \"category_name\": \"Delivery\",\n  \"currency\": \"EGP\",\n  \"exemplars\": [\n    { \"title\": \"Pick up groceries from Gourmet and drop in Maadi\", \"description\": \"Three bags, evening drop, tip included.\", \"budget\": 180, \"duration_minutes\": 90 },\n    { \"title\": \"Deliver online order from Amazon locker to apartment\", \"description\": \"Small box, morning pickup.\", \"budget\": 120, \"duration_minutes\": 60 },\n    { \"title\": \"Bring Spinneys weekly shop upstairs\", \"description\": \"Six bags, fourth floor no elevator, weekend.\", \"budget\": 250, \"duration_minutes\": 120 },\n    { \"title\": \"Carrefour City to New Cairo delivery\", \"description\": \"Four bags including dairy and frozen items.\", \"budget\": 220, \"duration_minutes\": 100 },\n    { \"title\": \"Pharmacy run and home delivery\", \"description\": \"Prescription plus two OTC items.\", \"budget\": 80, \"duration_minutes\": 45 }\n  ]\n}"
             },
             "description": "Direct call to the Python AI service. Sends the task plus a set of historical exemplars (title, description, budget, duration_minutes). The service embeds everything with sentence-transformers/all-MiniLM-L6-v2, runs k-NN cosine-similarity regression on the exemplars, and returns a cost + duration estimate with confidence based on neighbor similarity. With an empty exemplars array it degrades to a complexity-factor heuristic."
+          }
+        },
+        {
+          "name": "Chat (FAQ assistant)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{categoryAiBaseUrl}}/chat", "host": ["{{categoryAiBaseUrl}}"], "path": ["chat"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"How do I verify my identity on Engzly?\",\n  \"history\": []\n}"
+            },
+            "description": "Direct call to the Python chat endpoint. Embeds the message, ranks it against the curated Engzly FAQ knowledge base, and returns the best-matching answer with an intent label and cosine-based confidence score."
           }
         },
         {
