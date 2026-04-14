@@ -1,9 +1,11 @@
 ﻿using Engzly.Application.Interfaces;
+using Engzly.Application.Interfaces.AI;
 using Engzly.Application.Interfaces.Authentication;
 using Engzly.Application.Interfaces.Notifications;
 using Engzly.Application.Interfaces.Repositories;
 using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
 using Engzly.Domain.Entities.Identity;
+using Engzly.Infrastructure.AI;
 using Engzly.Infrastructure.Authentication;
 using Engzly.Infrastructure.Authorization.OtpSecurity;
 using Engzly.Infrastructure.Authorization.OtpSecurity.Notification;
@@ -76,6 +78,15 @@ public static class DependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
+
+        services.Configure<Engzly.Application.Interfaces.AI.CategoryAIOptions>(
+            configuration.GetSection(Engzly.Application.Interfaces.AI.CategoryAIOptions.SectionName));
+        services.AddHttpClient<ICategoryClassifier, HttpCategoryClassifier>((sp, client) =>
+        {
+            var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Engzly.Application.Interfaces.AI.CategoryAIOptions>>().Value;
+            client.BaseAddress = new Uri(opts.BaseUrl);
+            client.Timeout = opts.Timeout;
+        });
 
         services.AddLogging(configuration, environment);
 
