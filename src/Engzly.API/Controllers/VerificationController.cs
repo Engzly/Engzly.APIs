@@ -21,14 +21,9 @@ namespace Engzly.API.Controllers
         : BaseApiController
     {
         [HttpPost("submit")]
-        public async Task<IActionResult> Submit([FromForm] IFormFile frontImage, [FromForm] IFormFile backImage, [FromForm] IFormFile selfie)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Submit([FromForm] SubmitVerificationCommand command)
         {
-            var command = new SubmitVerificationCommand
-            {
-                FrontImage = frontImage,
-                BackImage = backImage,
-                Selfie = selfie
-            };
             var result = await _mediator.Send(command);
             return Resolve(result);
         }
