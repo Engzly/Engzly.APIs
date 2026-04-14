@@ -18,7 +18,8 @@
     { "key": "reviewedUserId", "value": "", "type": "string" },
     { "key": "notificationId", "value": "", "type": "string" },
     { "key": "conversationId", "value": "", "type": "string" },
-    { "key": "otherUserId", "value": "", "type": "string" }
+    { "key": "otherUserId", "value": "", "type": "string" },
+    { "key": "messageId", "value": "", "type": "string" }
   ],
   "auth": {
     "type": "bearer",
@@ -900,6 +901,18 @@
         },
         {
           "name": "Send Text Message",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json && json.data && json.data.id) pm.collectionVariables.set('messageId', json.data.id);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -947,6 +960,36 @@
               "mode": "raw",
               "raw": "{\n  \"conversationId\": \"{{conversationId}}\",\n  \"latitude\": 30.0444,\n  \"longitude\": 31.2357\n}"
             }
+          }
+        },
+        {
+          "name": "Edit Message",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/chat/messages/{{messageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chat", "messages", "{{messageId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Updated message text\"\n}"
+            },
+            "description": "Edit a text message you previously sent. Real-time: the other participant receives a 'messageEdited' event over SignalR with the updated body and an editedOn timestamp."
+          }
+        },
+        {
+          "name": "Delete Message",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/chat/messages/{{messageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "chat", "messages", "{{messageId}}"]
+            },
+            "description": "Delete a message you previously sent (for everyone). The message row is kept as a tombstone with content cleared so the other participant's client can render 'This message was deleted'. Real-time: the other participant receives a 'messageDeleted' event over SignalR."
           }
         },
         {
