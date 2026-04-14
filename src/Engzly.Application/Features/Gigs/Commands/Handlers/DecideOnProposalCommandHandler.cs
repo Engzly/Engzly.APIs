@@ -4,13 +4,15 @@ using Engzly.Application.Interfaces.Authentication;
 using Engzly.Application.Interfaces.Repositories;
 using Engzly.Application.Responses.GigsResponse;
 using Engzly.Domain.Entities.Gigs;
+using Engzly.Domain.Entities.Identity;
 using Engzly.Domain.Enums;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 
 
 namespace Engzly.Application.Features.Gigs.Commands.Handlers
 {
-    public class DecideOnProposalCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _currentUser) : ResponseHandler, IRequestHandler<DecideOnProposalCommand, Response<DecideOnProposalResponse>>
+    public class DecideOnProposalCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _currentUser, UserManager<User> _userManager) : ResponseHandler, IRequestHandler<DecideOnProposalCommand, Response<DecideOnProposalResponse>>
     {
 
         public async Task<Response<DecideOnProposalResponse>> Handle(DecideOnProposalCommand request, CancellationToken ct)
@@ -50,6 +52,9 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
                 switch (request.Decision)
                 {
                     case ProposalStatus.Approved:
+                        var helper = await _userManager.FindByIdAsync(proposal.TaskerId);
+                        if (helper is null || !helper.IsIdentityVerified)
+                            return Forbidden<DecideOnProposalResponse>("The helper is no longer identity verified and cannot be approved");
                         proposal.Approve();
                         var assignment = new GigAssignment
                         {

@@ -4,13 +4,15 @@ using Engzly.Application.Interfaces.Authentication;
 using Engzly.Application.Interfaces.Repositories;
 using Engzly.Application.Responses.GigsResponse;
 using Engzly.Domain.Entities.Gigs;
+using Engzly.Domain.Entities.Identity;
 using Engzly.Domain.Enums;
 using Engzly.Domain.Specifications;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 
 namespace Engzly.Application.Features.Gigs.Commands.Handlers
 {
-    public class SubmitProposalCommandHandler(IGenericRepository<Gig, string> _gigRepository, IGenericRepository<Proposal, string> _proposalRepository, ICurrentUserService _currentUser) : ResponseHandler, IRequestHandler<SubmitProposalCommand, Response<SubmitProposalResponse>>
+    public class SubmitProposalCommandHandler(IGenericRepository<Gig, string> _gigRepository, IGenericRepository<Proposal, string> _proposalRepository, ICurrentUserService _currentUser, UserManager<User> _userManager) : ResponseHandler, IRequestHandler<SubmitProposalCommand, Response<SubmitProposalResponse>>
     {
 
 
@@ -19,6 +21,13 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
             var currentUser = _currentUser.GetCurrentUser();
             if (string.IsNullOrWhiteSpace(currentUser.Id))
                 return Unauthorized<SubmitProposalResponse>(" Must Login First ");
+
+            var helper = await _userManager.FindByIdAsync(currentUser.Id);
+            if (helper is null)
+                return Unauthorized<SubmitProposalResponse>("User Not Found");
+
+            if (!helper.IsIdentityVerified)
+                return Forbidden<SubmitProposalResponse>("You must complete identity verification before applying to tasks");
 
             var gig = await _gigRepository.GetByIdAsync(request.GigId, ct);
             if (gig is null)
