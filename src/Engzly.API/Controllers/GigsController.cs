@@ -10,10 +10,39 @@ namespace Engzly.API.Controllers
 {
     public sealed class GigsController(ISender _mediator) : BaseApiController
     {
+        [HttpGet]
+        public async Task<IActionResult> List(
+            [FromQuery] string? search,
+            [FromQuery] string? categoryId,
+            [FromQuery] GigStatus? status,
+            [FromQuery] decimal? minBudget,
+            [FromQuery] decimal? maxBudget,
+            [FromQuery] DateTime? startDateFrom,
+            [FromQuery] DateTime? dueDateTo,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            var result = await _mediator.Send(new GetTasksQuery(
+                search, categoryId, status, minBudget, maxBudget, startDateFrom, dueDateTo, page, pageSize));
+            return Resolve(result);
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTaskDetails(string id)
         {
             var result = await _mediator.Send(new GetTaskDetailsQuery(id));
+            return Resolve(result);
+        }
+
+        [HttpGet("estimate")]
+        public async Task<IActionResult> Estimate(
+            [FromQuery] string title,
+            [FromQuery] string? description,
+            [FromQuery] string? categoryId,
+            [FromQuery] int numberOfTaskersNeeded = 1)
+        {
+            var result = await _mediator.Send(
+                new EstimateTaskQuery(title, description, categoryId, numberOfTaskersNeeded));
             return Resolve(result);
         }
 
@@ -97,6 +126,30 @@ namespace Engzly.API.Controllers
                 Message: massage.Message
             );
             var result = await _mediator.Send(_command);
+            return Resolve(result);
+        }
+
+        [Authorize]
+        [HttpGet("{gigId}/proposals")]
+        public async Task<IActionResult> GetProposalsForGig([FromRoute] string gigId)
+        {
+            var result = await _mediator.Send(new GetProposalsByGigQuery(gigId));
+            return Resolve(result);
+        }
+
+        [Authorize]
+        [HttpGet("proposals/mine")]
+        public async Task<IActionResult> GetMyProposals()
+        {
+            var result = await _mediator.Send(new GetMyProposalsQuery());
+            return Resolve(result);
+        }
+
+        [Authorize]
+        [HttpDelete("proposals/{proposalId}")]
+        public async Task<IActionResult> WithdrawProposal([FromRoute] string proposalId)
+        {
+            var result = await _mediator.Send(new WithdrawProposalCommand(proposalId));
             return Resolve(result);
         }
 
