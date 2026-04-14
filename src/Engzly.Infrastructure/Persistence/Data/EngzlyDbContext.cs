@@ -2,6 +2,7 @@
 using Engzly.Domain.Entities.Identity;
 using Engzly.Domain.Entities.Notifications;
 using Engzly.Domain.Entities.Reviews;
+using Engzly.Domain.Entities.Verification;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,8 @@ namespace Engzly.Infrastructure.Persistence.Data
         public DbSet<Notification> Notifications { get; private set; }
         public DbSet<Review> Reviews { get; private set; }
         public DbSet<Media> Medias { get; private set; }
+        public DbSet<IdentityVerification> IdentityVerifications { get; private set; }
+        public DbSet<VerificationAccessLog> VerificationAccessLogs { get; private set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
