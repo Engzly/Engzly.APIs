@@ -1,4 +1,6 @@
 ﻿using System.Text;
+using Engzly.API.Hubs;
+using Engzly.Application.Interfaces;
 using Engzly.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -50,10 +52,24 @@ namespace Engzly.API
                             };
 
                             return context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
+                        },
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                path.StartsWithSegments("/hubs/chat"))
+                            {
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
                         }
                     };
 
                 });
+
+            services.AddSignalR();
+            services.AddScoped<IChatNotifier, SignalRChatNotifier>();
 
             // 3️⃣ Swagger
             services.AddSwaggerGen(c =>

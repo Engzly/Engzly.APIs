@@ -1,4 +1,5 @@
 using Engzly.API;
+using Engzly.API.Hubs;
 using Engzly.API.Middlewares;
 using Engzly.Application;
 using Engzly.Domain.Entities.Identity;
@@ -68,6 +69,8 @@ app.UseAuthorization();
 #region Map Controllers
 
 app.MapControllers();
+
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.MapGet("/health", () => Results.Ok(new
 {
