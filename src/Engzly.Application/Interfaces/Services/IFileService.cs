@@ -9,6 +9,9 @@ namespace Engzly.Application.Interfaces.Services
         {
             Task<string> UploadFileAsync(IFormFile file, string folderName);
             Task<List<MediaUploadResponse>> UploadMediaFilesAsync(List<IFormFile> files);
+            Task<string> SavePrivateAsync(IFormFile file, string subPath);
+            Stream OpenPrivateRead(string relativePath);
+            bool PrivateFileExists(string relativePath);
         }
     }
 
