@@ -3,6 +3,7 @@ using Engzly.API.Middlewares;
 using Engzly.Application;
 using Engzly.Infrastructure;
 using Engzly.Infrastructure.Persistence.Data;
+using Engzly.Infrastructure.Persistence.Seeders;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -28,6 +29,8 @@ var context = scope.ServiceProvider.GetRequiredService<EngzlyDbContext>();
 var migrations = context.Database.GetPendingMigrations();
 if (migrations.Any())
     await context.Database.MigrateAsync();
+
+await CategorySeeder.SeedAsync(context);
 
 #endregion
 
