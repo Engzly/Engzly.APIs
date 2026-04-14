@@ -16,6 +16,16 @@ namespace Engzly.API.Controllers
             var result = await _mediator.Send(new GetTaskDetailsQuery(id));
             return Resolve(result);
         }
+
+        [HttpGet("suggest-category")]
+        public async Task<IActionResult> SuggestCategory(
+            [FromQuery] string title,
+            [FromQuery] string? description,
+            [FromQuery] int topK = 3)
+        {
+            var result = await _mediator.Send(new SuggestCategoryQuery(title, description ?? string.Empty, topK));
+            return Resolve(result);
+        }
         [Authorize]
         [HttpPost("publish")]
         public async Task<IActionResult> Publish([FromBody] PublishTaskCommand command)
