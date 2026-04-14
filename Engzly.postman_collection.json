@@ -1,0 +1,895 @@
+{
+  "info": {
+    "_postman_id": "b6a1d1f2-3e4f-4b0a-9c1d-engzly00001",
+    "name": "Engzly API",
+    "description": "Full Postman collection for the Engzly .NET API. Import and set the `baseUrl` variable. The Login request automatically saves the access + refresh tokens to collection variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://localhost:7182", "type": "string" },
+    { "key": "categoryAiBaseUrl", "value": "http://localhost:8000", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "refreshToken", "value": "", "type": "string" },
+    { "key": "userId", "value": "", "type": "string" },
+    { "key": "gigId", "value": "", "type": "string" },
+    { "key": "proposalId", "value": "", "type": "string" },
+    { "key": "verificationId", "value": "", "type": "string" },
+    { "key": "categoryId", "value": "delivery", "type": "string" },
+    { "key": "reviewedUserId", "value": "", "type": "string" },
+    { "key": "notificationId", "value": "", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{token}}", "type": "string" }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": { "type": "text/javascript", "exec": [""] }
+    }
+  ],
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Register (Client)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/users/register", "host": ["{{baseUrl}}"], "path": ["api", "users", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Alex\",\n  \"lastName\": \"Client\",\n  \"userName\": \"alex.client\",\n  \"email\": \"alex.client@example.com\",\n  \"phoneNumber\": \"+201000000001\",\n  \"password\": \"P@ssw0rd!\",\n  \"accountType\": 0,\n  \"city\": \"Cairo\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register (Helper)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/users/register", "host": ["{{baseUrl}}"], "path": ["api", "users", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Sam\",\n  \"lastName\": \"Helper\",\n  \"userName\": \"sam.helper\",\n  \"email\": \"sam.helper@example.com\",\n  \"phoneNumber\": \"+201000000002\",\n  \"password\": \"P@ssw0rd!\",\n  \"accountType\": 1,\n  \"city\": \"Alexandria\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data) {",
+                  "  if (json.data.token) pm.collectionVariables.set('token', json.data.token);",
+                  "  if (json.data.accessToken) pm.collectionVariables.set('token', json.data.accessToken);",
+                  "  if (json.data.refreshToken) pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
+                  "  if (json.data.userId) pm.collectionVariables.set('userId', json.data.userId);",
+                  "  if (json.data.id) pm.collectionVariables.set('userId', json.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/users/login", "host": ["{{baseUrl}}"], "path": ["api", "users", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alex.client@example.com\",\n  \"password\": \"P@ssw0rd!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/users/refresh", "host": ["{{baseUrl}}"], "path": ["api", "users", "refresh"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Revoke Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/users/revoke", "host": ["{{baseUrl}}"], "path": ["api", "users", "revoke"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/users/logout", "host": ["{{baseUrl}}"], "path": ["api", "users", "logout"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/delete/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "delete", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Upload Profile Image",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/users/upload-profile-image", "host": ["{{baseUrl}}"], "path": ["api", "users", "upload-profile-image"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "Image", "type": "file", "src": [] }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/users/forgot-password", "host": ["{{baseUrl}}"], "path": ["api", "users", "forgot-password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alex.client@example.com\",\n  \"channel\": 1,\n  \"phoneE164\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/users/reset-password", "host": ["{{baseUrl}}"], "path": ["api", "users", "reset-password"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alex.client@example.com\",\n  \"channel\": 1,\n  \"code\": \"123456\",\n  \"newPassword\": \"NewP@ssw0rd!\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "OTP",
+      "item": [
+        {
+          "name": "Send OTP",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/otp/send", "host": ["{{baseUrl}}"], "path": ["api", "otp", "send"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"purpose\": 1,\n  \"channel\": 1,\n  \"destination\": \"alex.client@example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/otp/verify", "host": ["{{baseUrl}}"], "path": ["api", "otp", "verify"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"purpose\": 1,\n  \"channel\": 1,\n  \"code\": \"123456\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gigs",
+      "item": [
+        {
+          "name": "List Tasks (search + filter)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs?search=&categoryId=&status=&minBudget=&maxBudget=&startDateFrom=&dueDateTo=&page=1&pageSize=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gigs"],
+              "query": [
+                { "key": "search", "value": "", "description": "Free-text match on title/description" },
+                { "key": "categoryId", "value": "", "description": "Filter by category" },
+                { "key": "status", "value": "", "description": "0=Draft,1=Published,2=Assigned,3=Completed,4=Verified,5=Cancelled" },
+                { "key": "minBudget", "value": "" },
+                { "key": "maxBudget", "value": "" },
+                { "key": "startDateFrom", "value": "", "description": "ISO datetime" },
+                { "key": "dueDateTo", "value": "", "description": "ISO datetime" },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Task Details",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{gigId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gigs", "{{gigId}}"]
+            }
+          }
+        },
+        {
+          "name": "Estimate Task (AI cost + duration)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/estimate?title=Deliver groceries from Carrefour to Zamalek&description=Medium shopping cart, two bags, ground floor pickup and 5th floor delivery&categoryId=&numberOfTaskersNeeded=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gigs", "estimate"],
+              "query": [
+                { "key": "title", "value": "Deliver groceries from Carrefour to Zamalek" },
+                { "key": "description", "value": "Medium shopping cart, two bags, ground floor pickup and 5th floor delivery" },
+                { "key": "categoryId", "value": "", "description": "Optional - if empty, AI category classifier picks it" },
+                { "key": "numberOfTaskersNeeded", "value": "1" }
+              ]
+            },
+            "description": "Returns budget (min/expected/max) and duration (min/expected/max minutes) for a task. Uses historical completed gigs in the category when available, falls back to category-agnostic defaults otherwise. Confidence scales with sample size. Method field is 'historical' or 'fallback'."
+          }
+        },
+        {
+          "name": "Suggest Category",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/suggest-category?title=Fix a leaking sink&description=Kitchen sink is dripping and needs plumber&topK=3",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gigs", "suggest-category"],
+              "query": [
+                { "key": "title", "value": "Fix a leaking sink" },
+                { "key": "description", "value": "Kitchen sink is dripping and needs plumber" },
+                { "key": "topK", "value": "3" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Publish Task (with CategoryId)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data) pm.collectionVariables.set('gigId', json.data);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/gigs/publish", "host": ["{{baseUrl}}"], "path": ["api", "gigs", "publish"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Deliver groceries from Carrefour\",\n  \"description\": \"Pick up my online order and bring it to my apartment in Zamalek.\",\n  \"latitude\": 30.0626,\n  \"longitude\": 31.2197,\n  \"categoryId\": \"{{categoryId}}\",\n  \"numberOfTaskersNeeded\": 1,\n  \"mediaIds\": [],\n  \"startDate\": \"2026-04-20T09:00:00Z\",\n  \"dueDate\": \"2026-04-20T18:00:00Z\",\n  \"budget\": 150\n}"
+            }
+          }
+        },
+        {
+          "name": "Publish Task (auto-detect category)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/gigs/publish", "host": ["{{baseUrl}}"], "path": ["api", "gigs", "publish"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Need help moving furniture to new apartment\",\n  \"description\": \"Two-bedroom apartment move, need strong helpers to lift sofa, wardrobe, and boxes.\",\n  \"latitude\": 30.0444,\n  \"longitude\": 31.2357,\n  \"categoryId\": null,\n  \"numberOfTaskersNeeded\": 2,\n  \"mediaIds\": [],\n  \"startDate\": \"2026-04-22T08:00:00Z\",\n  \"dueDate\": \"2026-04-22T20:00:00Z\",\n  \"budget\": 800\n}"
+            }
+          }
+        },
+        {
+          "name": "Edit Task",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/editegig/{{gigId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gigs", "editegig", "{{gigId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated title\",\n  \"description\": \"Updated description for the task.\",\n  \"latitude\": 30.0444,\n  \"longitude\": 31.2357,\n  \"categoryId\": \"{{categoryId}}\",\n  \"mediaUrls\": [],\n  \"numberOfTaskersNeeded\": 2,\n  \"startDate\": \"2026-04-25T08:00:00Z\",\n  \"dueDate\": \"2026-04-25T20:00:00Z\",\n  \"budget\": 1000\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{gigId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gigs", "{{gigId}}"]
+            }
+          }
+        },
+        {
+          "name": "Upload Media",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/gigs/upload-media", "host": ["{{baseUrl}}"], "path": ["api", "gigs", "upload-media"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "Files", "type": "file", "src": [] }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Complete Task",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{gigId}}/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gigs", "{{gigId}}", "complete"]
+            }
+          }
+        },
+        {
+          "name": "Verify Task",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{gigId}}/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gigs", "{{gigId}}", "verify"]
+            }
+          }
+        },
+        {
+          "name": "Submit Proposal (Helper applies)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.applicationId) pm.collectionVariables.set('proposalId', json.data.applicationId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{gigId}}/apply",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gigs", "{{gigId}}", "apply"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"I can do this task today. I have experience with similar jobs.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Decide on Proposal",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/requests/{{proposalId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gigs", "requests", "{{proposalId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": 1\n}"
+            },
+            "description": "decision: 1 = Approved, 2 = Rejected"
+          }
+        },
+        {
+          "name": "Get Proposals For Gig (owner)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{gigId}}/proposals",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gigs", "{{gigId}}", "proposals"]
+            }
+          }
+        },
+        {
+          "name": "Get My Proposals (helper)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/proposals/mine",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gigs", "proposals", "mine"]
+            }
+          }
+        },
+        {
+          "name": "Withdraw Proposal",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/proposals/{{proposalId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gigs", "proposals", "{{proposalId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Assignments",
+      "item": [
+        {
+          "name": "Get My Assignments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/assignments/mine?role=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assignments", "mine"],
+              "query": [
+                { "key": "role", "value": "", "description": "client | helper | empty for both" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List Categories",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/categories", "host": ["{{baseUrl}}"], "path": ["api", "categories"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Liveness",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Verification",
+      "item": [
+        {
+          "name": "Submit Identity Verification",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.verificationId) pm.collectionVariables.set('verificationId', json.data.verificationId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/verification/submit", "host": ["{{baseUrl}}"], "path": ["api", "verification", "submit"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "frontImage", "type": "file", "src": [] },
+                { "key": "backImage", "type": "file", "src": [] },
+                { "key": "selfie", "type": "file", "src": [] }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get My Verification",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/api/verification/me", "host": ["{{baseUrl}}"], "path": ["api", "verification", "me"] }
+          }
+        },
+        {
+          "name": "Get Verification File (front)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/verification/file/{{verificationId}}/front",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "verification", "file", "{{verificationId}}", "front"]
+            }
+          }
+        },
+        {
+          "name": "Get Verification File (back)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/verification/file/{{verificationId}}/back",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "verification", "file", "{{verificationId}}", "back"]
+            }
+          }
+        },
+        {
+          "name": "Get Verification File (selfie)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/verification/file/{{verificationId}}/selfie",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "verification", "file", "{{verificationId}}", "selfie"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Verifications",
+      "item": [
+        {
+          "name": "List Verifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/verifications?status=0&page=1&pageSize=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "verifications"],
+              "query": [
+                { "key": "status", "value": "0", "description": "0=Pending, 1=UnderReview, 2=Approved, 3=Rejected" },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Verification Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/verifications/{{verificationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "verifications", "{{verificationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Approve Verification",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/verifications/{{verificationId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "verifications", "{{verificationId}}", "approve"]
+            }
+          }
+        },
+        {
+          "name": "Reject Verification",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/verifications/{{verificationId}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "verifications", "{{verificationId}}", "reject"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"The ID photos are blurry and hard to read. Please resubmit with clearer images.\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Post Review",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/reviews", "host": ["{{baseUrl}}"], "path": ["api", "reviews"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reviewedUserId\": \"{{reviewedUserId}}\",\n  \"gigId\": \"{{gigId}}\",\n  \"comment\": \"Fantastic work, arrived on time and was very professional.\",\n  \"rating\": 5\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Reviews For User",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews/user/{{reviewedUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reviews", "user", "{{reviewedUserId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Reviews For Gig",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews/gig/{{gigId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reviews", "gig", "{{gigId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get User Average Rating",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews/user/{{reviewedUserId}}/rating",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reviews", "user", "{{reviewedUserId}}", "rating"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Send Notification",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/notifications", "host": ["{{baseUrl}}"], "path": ["api", "notifications"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Hello from Engzly!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/mine?unreadOnly=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "mine"],
+              "query": [
+                { "key": "unreadOnly", "value": "false" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Unread Count",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/unread-count",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "unread-count"]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/{{notificationId}}/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "{{notificationId}}", "read"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Users",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users?search=&accountType=&status=&isIdentityVerified=&page=1&pageSize=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users"],
+              "query": [
+                { "key": "search", "value": "", "description": "Email/name contains" },
+                { "key": "accountType", "value": "", "description": "0=Client, 1=Helper" },
+                { "key": "status", "value": "", "description": "0=Pending, 1=Active, 2=Blocked, 3=Deleted" },
+                { "key": "isIdentityVerified", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Block User",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/{{userId}}/block",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users", "{{userId}}", "block"]
+            }
+          }
+        },
+        {
+          "name": "Unblock User",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/{{userId}}/unblock",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users", "{{userId}}", "unblock"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "CategoryAI (Python Service)",
+      "description": "Direct calls to the FastAPI classification microservice. Uses categoryAiBaseUrl (default http://localhost:8000). No auth.",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{categoryAiBaseUrl}}/health", "host": ["{{categoryAiBaseUrl}}"], "path": ["health"] }
+          }
+        },
+        {
+          "name": "Classify (delivery sample)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{categoryAiBaseUrl}}/classify", "host": ["{{categoryAiBaseUrl}}"], "path": ["classify"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Pick up my online order from Carrefour\",\n  \"description\": \"Need someone to collect my groceries and drop them at my home in Zamalek\",\n  \"top_k\": 3,\n  \"candidates\": [\n    { \"id\": \"events\", \"name\": \"Events\", \"description\": \"Event planning and support. Weddings, birthdays, parties, conferences.\" },\n    { \"id\": \"delivery\", \"name\": \"Delivery\", \"description\": \"Picking up and delivering items between locations. Packages, documents, groceries, food, furniture, online orders, gifts.\" },\n    { \"id\": \"government-papers\", \"name\": \"Government Papers\", \"description\": \"Paperwork and official documents. ID renewal, licenses, permits.\" },\n    { \"id\": \"fix-things\", \"name\": \"Fix Things\", \"description\": \"Repairs and maintenance. Appliances, plumbing, electrical, furniture assembly.\" },\n    { \"id\": \"cleaning\", \"name\": \"Cleaning\", \"description\": \"House, office, and post-event cleaning. Deep cleaning, laundry, ironing.\" },\n    { \"id\": \"moving-transport\", \"name\": \"Moving & Transport\", \"description\": \"Moving homes or offices. Carrying heavy items, loading and unloading, furniture relocation.\" },\n    { \"id\": \"shopping-errands\", \"name\": \"Shopping & Errands\", \"description\": \"Buying items from stores, grocery runs, bill payments, pharmacy pickups.\" },\n    { \"id\": \"tutoring-lessons\", \"name\": \"Tutoring & Lessons\", \"description\": \"Teaching and academic help. School subjects, languages, exam prep, homework help.\" },\n    { \"id\": \"tech-help\", \"name\": \"Tech Help\", \"description\": \"Computer, phone, and software support. Setting up devices, installing software, WiFi issues.\" },\n    { \"id\": \"pet-home-care\", \"name\": \"Pet & Home Care\", \"description\": \"Pet sitting, dog walking, feeding animals, plant watering, babysitting help.\" }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Estimate (direct, with exemplars)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{categoryAiBaseUrl}}/estimate", "host": ["{{categoryAiBaseUrl}}"], "path": ["estimate"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Deliver groceries from Carrefour to Zamalek\",\n  \"description\": \"Medium shopping cart, two bags, ground floor pickup and fifth floor delivery.\",\n  \"number_of_taskers_needed\": 1,\n  \"top_k\": 5,\n  \"category_id\": \"delivery\",\n  \"category_name\": \"Delivery\",\n  \"currency\": \"EGP\",\n  \"exemplars\": [\n    { \"title\": \"Pick up groceries from Gourmet and drop in Maadi\", \"description\": \"Three bags, evening drop, tip included.\", \"budget\": 180, \"duration_minutes\": 90 },\n    { \"title\": \"Deliver online order from Amazon locker to apartment\", \"description\": \"Small box, morning pickup.\", \"budget\": 120, \"duration_minutes\": 60 },\n    { \"title\": \"Bring Spinneys weekly shop upstairs\", \"description\": \"Six bags, fourth floor no elevator, weekend.\", \"budget\": 250, \"duration_minutes\": 120 },\n    { \"title\": \"Carrefour City to New Cairo delivery\", \"description\": \"Four bags including dairy and frozen items.\", \"budget\": 220, \"duration_minutes\": 100 },\n    { \"title\": \"Pharmacy run and home delivery\", \"description\": \"Prescription plus two OTC items.\", \"budget\": 80, \"duration_minutes\": 45 }\n  ]\n}"
+            },
+            "description": "Direct call to the Python AI service. Sends the task plus a set of historical exemplars (title, description, budget, duration_minutes). The service embeds everything with sentence-transformers/all-MiniLM-L6-v2, runs k-NN cosine-similarity regression on the exemplars, and returns a cost + duration estimate with confidence based on neighbor similarity. With an empty exemplars array it degrades to a complexity-factor heuristic."
+          }
+        },
+        {
+          "name": "Classify (fix-things sample)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{categoryAiBaseUrl}}/classify", "host": ["{{categoryAiBaseUrl}}"], "path": ["classify"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Kitchen sink is leaking\",\n  \"description\": \"Water dripping from under the sink, need a plumber to fix it today\",\n  \"top_k\": 3,\n  \"candidates\": [\n    { \"id\": \"events\", \"name\": \"Events\", \"description\": \"Event planning and support.\" },\n    { \"id\": \"delivery\", \"name\": \"Delivery\", \"description\": \"Picking up and delivering items.\" },\n    { \"id\": \"fix-things\", \"name\": \"Fix Things\", \"description\": \"Repairs and maintenance. Plumbing, electrical, leaks, appliances.\" },\n    { \"id\": \"cleaning\", \"name\": \"Cleaning\", \"description\": \"House, office, and post-event cleaning.\" },\n    { \"id\": \"moving-transport\", \"name\": \"Moving & Transport\", \"description\": \"Moving homes, heavy lifting.\" }\n  ]\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
