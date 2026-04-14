@@ -1,4 +1,5 @@
-﻿using Engzly.Domain.Entities.Gigs;
+﻿using Engzly.Domain.Entities.Chat;
+using Engzly.Domain.Entities.Gigs;
 using Engzly.Domain.Entities.Identity;
 using Engzly.Domain.Entities.Notifications;
 using Engzly.Domain.Entities.Reviews;
@@ -19,6 +20,8 @@ namespace Engzly.Infrastructure.Persistence.Data
         public DbSet<Media> Medias { get; private set; }
         public DbSet<IdentityVerification> IdentityVerifications { get; private set; }
         public DbSet<VerificationAccessLog> VerificationAccessLogs { get; private set; }
+        public DbSet<Conversation> Conversations { get; private set; }
+        public DbSet<ChatMessage> ChatMessages { get; private set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
