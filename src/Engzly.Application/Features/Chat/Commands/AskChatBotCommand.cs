@@ -122,7 +122,9 @@ namespace Engzly.Application.Features.Chat.Commands
                     userMessage.Text,
                     null, null, null,
                     userMessage.SentOn,
-                    userMessage.IsRead),
+                    userMessage.IsRead,
+                    userMessage.EditedOn,
+                    userMessage.IsDeleted),
                 new ChatMessageResponse(
                     botMessage.Id,
                     botMessage.ConversationId,
@@ -131,7 +133,9 @@ namespace Engzly.Application.Features.Chat.Commands
                     botMessage.Text,
                     null, null, null,
                     botMessage.SentOn,
-                    botMessage.IsRead),
+                    botMessage.IsRead,
+                    botMessage.EditedOn,
+                    botMessage.IsDeleted),
                 reply.Intent,
                 reply.Confidence);
 

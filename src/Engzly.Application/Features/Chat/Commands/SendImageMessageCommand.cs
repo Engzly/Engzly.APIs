@@ -82,7 +82,9 @@ namespace Engzly.Application.Features.Chat.Commands
                 message.Latitude,
                 message.Longitude,
                 message.SentOn,
-                message.IsRead);
+                message.IsRead,
+                message.EditedOn,
+                message.IsDeleted);
 
             var recipientId = conversation.UserAId == caller.Id ? conversation.UserBId : conversation.UserAId;
             await _notifier.NotifyMessageAsync(conversation.Id, recipientId, response, cancellationToken);

@@ -12,7 +12,9 @@ namespace Engzly.Application.Features.Chat.Responses
         double? Latitude,
         double? Longitude,
         DateTime SentOn,
-        bool IsRead);
+        bool IsRead,
+        DateTime? EditedOn,
+        bool IsDeleted);
 
     public sealed record ConversationSummaryResponse(
         string Id,

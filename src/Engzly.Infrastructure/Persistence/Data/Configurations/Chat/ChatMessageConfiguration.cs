@@ -19,6 +19,7 @@ namespace Engzly.Infrastructure.Persistence.Data.Configurations.Chat
             builder.Property(m => m.Text).HasMaxLength(4000);
             builder.Property(m => m.ImageUrl).HasMaxLength(1024);
             builder.Property(m => m.SentOn).IsRequired();
+            builder.Property(m => m.IsDeleted).HasDefaultValue(false);
 
             builder.HasIndex(m => new { m.ConversationId, m.SentOn });
         }

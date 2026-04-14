@@ -58,7 +58,9 @@ namespace Engzly.Application.Features.Chat.Queries
                     m.Latitude,
                     m.Longitude,
                     m.SentOn,
-                    m.IsRead))
+                    m.IsRead,
+                    m.EditedOn,
+                    m.IsDeleted))
                 .ToList();
 
             var meta = new

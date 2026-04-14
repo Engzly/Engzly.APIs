@@ -27,5 +27,45 @@ namespace Engzly.API.Hubs
                     lastMessageText = message.Text
                 }, cancellationToken);
         }
+
+        public async Task NotifyMessageEditedAsync(
+            string conversationId,
+            string recipientId,
+            ChatMessageResponse message,
+            CancellationToken cancellationToken = default)
+        {
+            var conversationGroup = ChatHub.ConversationGroup(conversationId);
+            var userGroup = ChatHub.UserGroup(recipientId);
+
+            await _hub.Clients.Group(conversationGroup)
+                .SendAsync("messageEdited", message, cancellationToken);
+
+            await _hub.Clients.Group(userGroup)
+                .SendAsync("conversationMessageEdited", new
+                {
+                    conversationId,
+                    messageId = message.Id,
+                    text = message.Text,
+                    editedOn = message.EditedOn
+                }, cancellationToken);
+        }
+
+        public async Task NotifyMessageDeletedAsync(
+            string conversationId,
+            string recipientId,
+            string messageId,
+            CancellationToken cancellationToken = default)
+        {
+            var conversationGroup = ChatHub.ConversationGroup(conversationId);
+            var userGroup = ChatHub.UserGroup(recipientId);
+
+            var payload = new { conversationId, messageId };
+
+            await _hub.Clients.Group(conversationGroup)
+                .SendAsync("messageDeleted", payload, cancellationToken);
+
+            await _hub.Clients.Group(userGroup)
+                .SendAsync("conversationMessageDeleted", payload, cancellationToken);
+        }
     }
 }

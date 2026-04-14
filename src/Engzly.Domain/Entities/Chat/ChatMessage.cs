@@ -14,6 +14,9 @@ namespace Engzly.Domain.Entities.Chat
         public double? Longitude { get; set; }
         public DateTime SentOn { get; set; }
         public bool IsRead { get; set; }
+        public DateTime? EditedOn { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime? DeletedOn { get; set; }
 
         public Conversation Conversation { get; set; } = null!;
     }

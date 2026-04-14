@@ -53,7 +53,8 @@ namespace Engzly.Application.Features.Chat.Commands
             public UnreadIncomingMessagesSpec(string conversationId, string userId)
                 : base(m => m.ConversationId == conversationId
                          && m.SenderId != userId
-                         && !m.IsRead)
+                         && !m.IsRead
+                         && !m.IsDeleted)
             { }
         }
     }

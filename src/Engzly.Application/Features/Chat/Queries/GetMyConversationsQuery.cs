@@ -58,6 +58,12 @@ namespace Engzly.Application.Features.Chat.Queries
                     new UnreadForUserSpec(conversation.Id, caller.Id),
                     cancellationToken);
 
+                var lastText = last is null
+                    ? null
+                    : last.IsDeleted
+                        ? "This message was deleted"
+                        : last.Text;
+
                 result.Add(new ConversationSummaryResponse(
                     conversation.Id,
                     otherId,
@@ -65,7 +71,7 @@ namespace Engzly.Application.Features.Chat.Queries
                     conversation.GigId,
                     conversation.IsBot,
                     conversation.LastMessageOn,
-                    last?.Text,
+                    lastText,
                     last?.Type,
                     unread));
             }
@@ -92,7 +98,8 @@ namespace Engzly.Application.Features.Chat.Queries
             public UnreadForUserSpec(string conversationId, string userId)
                 : base(m => m.ConversationId == conversationId
                          && m.SenderId != userId
-                         && !m.IsRead)
+                         && !m.IsRead
+                         && !m.IsDeleted)
             { }
         }
     }

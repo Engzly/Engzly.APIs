@@ -9,18 +9,18 @@ using MediatR;
 
 namespace Engzly.Application.Features.Chat.Commands
 {
-    public sealed record SendTextMessageCommand(string ConversationId, string Text)
+    public sealed record EditMessageCommand(string MessageId, string Text)
         : IRequest<Response<ChatMessageResponse>>;
 
-    public sealed class SendTextMessageCommandHandler(
-        IGenericRepository<Conversation, string> _conversations,
+    public sealed class EditMessageCommandHandler(
         IGenericRepository<ChatMessage, string> _messages,
+        IGenericRepository<Conversation, string> _conversations,
         ICurrentUserService _currentUser,
         IChatNotifier _notifier)
-        : ResponseHandler, IRequestHandler<SendTextMessageCommand, Response<ChatMessageResponse>>
+        : ResponseHandler, IRequestHandler<EditMessageCommand, Response<ChatMessageResponse>>
     {
         public async Task<Response<ChatMessageResponse>> Handle(
-            SendTextMessageCommand request,
+            EditMessageCommand request,
             CancellationToken cancellationToken)
         {
             var caller = _currentUser.GetCurrentUser();
@@ -33,33 +33,29 @@ namespace Engzly.Application.Features.Chat.Commands
             if (request.Text.Length > 4000)
                 return BadRequest<ChatMessageResponse>("text exceeds 4000 characters");
 
-            var conversation = await _conversations.GetByIdAsync(request.ConversationId, cancellationToken);
+            var message = await _messages.GetByIdAsync(request.MessageId, cancellationToken);
+            if (message is null)
+                return NotFound<ChatMessageResponse>("Message not found");
+
+            if (message.IsDeleted)
+                return BadRequest<ChatMessageResponse>("Cannot edit a deleted message");
+
+            if (message.SenderId != caller.Id)
+                return Forbidden<ChatMessageResponse>("You can only edit your own messages");
+
+            if (message.Type != ChatMessageType.Text)
+                return BadRequest<ChatMessageResponse>("Only text messages can be edited");
+
+            var conversation = await _conversations.GetByIdAsync(message.ConversationId, cancellationToken);
             if (conversation is null)
                 return NotFound<ChatMessageResponse>("Conversation not found");
 
-            if (conversation.UserAId != caller.Id && conversation.UserBId != caller.Id)
-                return Forbidden<ChatMessageResponse>("Not a participant in this conversation");
-
             if (conversation.IsBot)
-                return BadRequest<ChatMessageResponse>("Use the chatbot endpoint for bot conversations");
+                return BadRequest<ChatMessageResponse>("Bot conversation messages cannot be edited");
 
-            var now = DateTime.UtcNow;
-            var message = new ChatMessage
-            {
-                Id = Guid.NewGuid().ToString(),
-                ConversationId = conversation.Id,
-                SenderId = caller.Id,
-                Type = ChatMessageType.Text,
-                Text = request.Text,
-                SentOn = now,
-                IsRead = false
-            };
-
-            await _messages.AddAsync(message, cancellationToken);
-
-            conversation.LastMessageOn = now;
-            _conversations.Update(conversation);
-
+            message.Text = request.Text;
+            message.EditedOn = DateTime.UtcNow;
+            _messages.Update(message);
             await _messages.CompleteAsync(cancellationToken);
 
             var response = new ChatMessageResponse(
@@ -77,9 +73,9 @@ namespace Engzly.Application.Features.Chat.Commands
                 message.IsDeleted);
 
             var recipientId = conversation.UserAId == caller.Id ? conversation.UserBId : conversation.UserAId;
-            await _notifier.NotifyMessageAsync(conversation.Id, recipientId, response, cancellationToken);
+            await _notifier.NotifyMessageEditedAsync(conversation.Id, recipientId, response, cancellationToken);
 
-            return Created(response);
+            return Success(response, "Message edited");
         }
     }
 }
