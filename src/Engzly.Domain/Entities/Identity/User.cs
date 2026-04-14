@@ -1,5 +1,6 @@
 ﻿using Engzly.Domain.Entities.Gigs;
 using Engzly.Domain.Entities.Notifications;
+using Engzly.Domain.Entities.Verification;
 using Engzly.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 
@@ -20,6 +21,9 @@ namespace Engzly.Domain.Entities.Identity
         public DateTime? RefreshTokenExpiryTime { get; set; }
 
         public ICollection<Notification> Notifications { get; set; } = new HashSet<Notification>();
+
+        public bool IsIdentityVerified { get; set; } = false;
+        public IdentityVerification? IdentityVerification { get; set; }
 
         //OTP
         public string? OtpHash { get; set; }
