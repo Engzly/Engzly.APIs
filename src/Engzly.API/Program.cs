@@ -69,6 +69,14 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapGet("/health", () => Results.Ok(new
+{
+    status = "healthy",
+    service = "Engzly.API",
+    timestamp = DateTime.UtcNow
+}))
+.AllowAnonymous();
+
 app.Run();
 
 #endregion
