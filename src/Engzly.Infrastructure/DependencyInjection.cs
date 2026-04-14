@@ -95,6 +95,13 @@ public static class DependencyInjection
             client.Timeout = opts.Timeout;
         });
 
+        services.AddHttpClient<IChatBot, HttpChatBot>((sp, client) =>
+        {
+            var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Engzly.Application.Interfaces.AI.CategoryAIOptions>>().Value;
+            client.BaseAddress = new Uri(opts.BaseUrl);
+            client.Timeout = opts.Timeout;
+        });
+
         services.AddLogging(configuration, environment);
 
         return services;

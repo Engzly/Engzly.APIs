@@ -5,6 +5,8 @@ Exposes:
   POST /classify — zero-shot category classification for a task.
   POST /estimate — AI cost + duration estimation using k-NN regression
                    over sentence embeddings of historical completed tasks.
+  POST /chat     — in-app FAQ/help assistant backed by embedding similarity
+                   against a curated knowledge base of Engzly topics.
 
 Model: sentence-transformers/all-MiniLM-L6-v2 (English, ~90MB, fast on CPU).
 The same model powers both endpoints: we embed the task + reference items,
@@ -292,4 +294,182 @@ async def estimate(req: EstimateRequest) -> EstimateResponse:
         sample_size=len(req.exemplars),
         confidence=round(confidence, 3),
         neighbors_used=len(top),
+    )
+
+
+class ChatHistoryItem(BaseModel):
+    role: str
+    content: str
+
+
+class ChatRequest(BaseModel):
+    message: str = Field(..., min_length=1, max_length=2000)
+    history: List[ChatHistoryItem] = Field(default_factory=list)
+
+
+class ChatResponse(BaseModel):
+    reply: str
+    intent: str
+    confidence: float
+    method: str
+
+
+# Curated Engzly FAQ knowledge base. Each entry is matched against the user
+# message via embedding similarity, and the best match's answer is returned.
+FAQ: List[Dict[str, str]] = [
+    {
+        "intent": "create_task",
+        "question": "How do I create a new task or gig on Engzly?",
+        "answer": (
+            "To create a task, open the app and go to Create Task. Fill in the "
+            "title, description, category, budget, and location. Engzly's AI "
+            "suggests a category and a fair budget range based on similar "
+            "completed tasks before you publish."
+        ),
+    },
+    {
+        "intent": "propose_task",
+        "question": "How do I send a proposal to a task?",
+        "answer": (
+            "Open the task details page and tap Send Proposal. Enter your "
+            "offered price and a short message. The task owner will be notified "
+            "and can accept, reject, or chat with you."
+        ),
+    },
+    {
+        "intent": "payment",
+        "question": "How does payment work on Engzly?",
+        "answer": (
+            "Payment is handled through the platform. The client funds the task "
+            "on assignment, and the funds are released to the tasker once the "
+            "work is completed and confirmed."
+        ),
+    },
+    {
+        "intent": "cancel_task",
+        "question": "How can I cancel a task?",
+        "answer": (
+            "You can cancel a task from the task details page as long as it has "
+            "not been completed or verified. Cancellation policies and any "
+            "refunds depend on the current task status."
+        ),
+    },
+    {
+        "intent": "verification",
+        "question": "How do I verify my identity?",
+        "answer": (
+            "Go to Profile > Identity Verification, upload a clear photo of "
+            "your national ID, and submit. A reviewer will approve or reject it "
+            "and you will receive a notification once it is processed."
+        ),
+    },
+    {
+        "intent": "chat_start",
+        "question": "How do I message another user?",
+        "answer": (
+            "Open a user's profile or a task details page and tap Chat. A "
+            "conversation is created automatically and you can send text, "
+            "images, or share your location."
+        ),
+    },
+    {
+        "intent": "reviews",
+        "question": "How do reviews and ratings work?",
+        "answer": (
+            "After a task is completed, both the client and the tasker can "
+            "leave a rating and written review. Average ratings are shown on "
+            "each user's profile and help others choose trusted partners."
+        ),
+    },
+    {
+        "intent": "support",
+        "question": "How do I contact support?",
+        "answer": (
+            "You can reach support from Settings > Help & Support. Describe "
+            "your issue and our team will get back to you. For urgent problems, "
+            "please include the task or user ID involved."
+        ),
+    },
+    {
+        "intent": "greeting",
+        "question": "Hello, hi, hey, good morning, good evening",
+        "answer": (
+            "Hi! I'm the Engzly assistant. I can help with creating tasks, "
+            "proposals, payments, verification, chat, reviews, and support. "
+            "What would you like to know?"
+        ),
+    },
+    {
+        "intent": "capabilities",
+        "question": "What can you do? Who are you?",
+        "answer": (
+            "I'm the Engzly assistant, here to answer questions about how the "
+            "platform works — tasks, proposals, payments, verification, chat, "
+            "reviews, and support. Ask me anything about using Engzly."
+        ),
+    },
+]
+
+_faq_cache: List[np.ndarray] = []
+
+
+def _ensure_faq_cache() -> None:
+    if _faq_cache:
+        return
+    for entry in FAQ:
+        _faq_cache.append(_embed(entry["question"]))
+
+
+FALLBACK_REPLY = (
+    "I'm not sure I understood that. You can ask me about creating tasks, "
+    "sending proposals, payments, identity verification, chat, reviews, or "
+    "contacting support."
+)
+
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat(req: ChatRequest) -> ChatResponse:
+    """
+    Lightweight in-app assistant.
+
+    Embeds the user message and ranks it against a curated FAQ knowledge
+    base using cosine similarity. The answer of the best-matching FAQ is
+    returned when similarity is above the confidence threshold; otherwise
+    a safe fallback is returned.
+
+    History is accepted for symmetry with conversational APIs; the current
+    implementation is single-turn (retrieval over FAQ), so history is not
+    used to steer the reply — the FAQ match is always the canonical answer.
+    """
+    if _model is None:
+        raise HTTPException(status_code=503, detail="model not loaded")
+
+    _ensure_faq_cache()
+
+    message_vec = _embed(req.message)
+    best_idx = -1
+    best_score = -1.0
+    for i, faq_vec in enumerate(_faq_cache):
+        score = float(np.dot(message_vec, faq_vec))
+        if score > best_score:
+            best_score = score
+            best_idx = i
+
+    normalized = max(0.0, min(1.0, (best_score + 1.0) / 2.0))
+    threshold = 0.55
+
+    if best_idx < 0 or normalized < threshold:
+        return ChatResponse(
+            reply=FALLBACK_REPLY,
+            intent="unknown",
+            confidence=round(normalized, 3),
+            method="embedding-faq",
+        )
+
+    entry = FAQ[best_idx]
+    return ChatResponse(
+        reply=entry["answer"],
+        intent=entry["intent"],
+        confidence=round(normalized, 3),
+        method="embedding-faq",
     )
