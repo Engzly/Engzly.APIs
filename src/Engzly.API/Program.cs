@@ -1,9 +1,11 @@
 using Engzly.API;
 using Engzly.API.Middlewares;
 using Engzly.Application;
+using Engzly.Domain.Entities.Identity;
 using Engzly.Infrastructure;
 using Engzly.Infrastructure.Persistence.Data;
 using Engzly.Infrastructure.Persistence.Seeders;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -31,6 +33,10 @@ if (migrations.Any())
     await context.Database.MigrateAsync();
 
 await CategorySeeder.SeedAsync(context);
+
+var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+await RoleSeeder.SeedAsync(roleManager, userManager, builder.Configuration);
 
 #endregion
 
