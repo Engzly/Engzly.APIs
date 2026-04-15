@@ -32,17 +32,36 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 log = logging.getLogger("category-ai")
 
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+MODERATION_MODEL_NAME = "unitary/multilingual-toxic-xlm-roberta"
 
 _model: SentenceTransformer | None = None
 _category_cache: Dict[str, np.ndarray] = {}
+_moderation_pipeline = None  # transformers pipeline; loaded lazily
+_moderation_load_failed = False
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _model
+    global _model, _moderation_pipeline, _moderation_load_failed
     log.info("loading model %s", MODEL_NAME)
     _model = SentenceTransformer(MODEL_NAME)
     log.info("model loaded, embedding dim=%d", _model.get_sentence_embedding_dimension())
+
+    try:
+        from transformers import pipeline  # type: ignore
+
+        log.info("loading moderation model %s", MODERATION_MODEL_NAME)
+        _moderation_pipeline = pipeline(
+            "text-classification",
+            model=MODERATION_MODEL_NAME,
+            top_k=None,
+            truncation=True,
+        )
+        log.info("moderation model loaded")
+    except Exception as ex:  # noqa: BLE001
+        _moderation_load_failed = True
+        log.warning("moderation model failed to load (%s) — /moderate will fail-open", ex)
+
     yield
     _category_cache.clear()
 
@@ -472,4 +491,62 @@ async def chat(req: ChatRequest) -> ChatResponse:
         intent=entry["intent"],
         confidence=round(normalized, 3),
         method="embedding-faq",
+    )
+
+
+class ModerateRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=4000)
+
+
+class ModerateResponse(BaseModel):
+    flagged: bool
+    score: float
+    categories: List[str]
+    method: str
+
+
+MODERATION_THRESHOLD = 0.7
+
+
+@app.post("/moderate", response_model=ModerateResponse)
+async def moderate(req: ModerateRequest) -> ModerateResponse:
+    """
+    Multilingual toxicity / profanity check.
+
+    Runs the incoming text through a HuggingFace toxicity classifier
+    (multilingual XLM-RoBERTa) and returns the flagged labels above the
+    confidence threshold. Used by the Engzly chat pipeline to block bad
+    messages before they are persisted.
+
+    If the model failed to load, returns flagged=false with method="disabled"
+    so the C# client can fail-open on its side as well.
+    """
+    if _moderation_pipeline is None:
+        return ModerateResponse(
+            flagged=False,
+            score=0.0,
+            categories=[],
+            method="disabled" if _moderation_load_failed else "loading",
+        )
+
+    try:
+        raw = _moderation_pipeline(req.text)
+    except Exception as ex:  # noqa: BLE001
+        log.warning("moderation inference failed: %s", ex)
+        return ModerateResponse(flagged=False, score=0.0, categories=[], method="error")
+
+    scores: List[tuple[str, float]] = []
+    if isinstance(raw, list) and raw and isinstance(raw[0], list):
+        scores = [(entry["label"], float(entry["score"])) for entry in raw[0]]
+    elif isinstance(raw, list):
+        scores = [(entry["label"], float(entry["score"])) for entry in raw]
+
+    flagged_labels = [label for label, score in scores if score >= MODERATION_THRESHOLD and label.lower() != "neutral"]
+    top_score = max((score for _, score in scores), default=0.0)
+
+    return ModerateResponse(
+        flagged=len(flagged_labels) > 0,
+        score=round(top_score, 4),
+        categories=flagged_labels,
+        method="xlm-roberta-toxic",
     )
