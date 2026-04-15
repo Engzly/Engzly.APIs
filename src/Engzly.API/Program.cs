@@ -59,6 +59,8 @@ app.UseMiddleware<ErrorHandlerMiddleware>();
 
 app.UseStaticFiles();
 
+app.UseCors("EngzlyCors");
+
 app.UseAuthentication();
 
 app.UseAuthorization();

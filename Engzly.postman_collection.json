@@ -476,6 +476,23 @@
               "path": ["api", "gigs", "proposals", "{{proposalId}}"]
             }
           }
+        },
+        {
+          "name": "Remove Helper From Gig (owner)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{gigId}}/helpers/{{helperId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gigs", "{{gigId}}", "helpers", "{{helperId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Helper could not attend the agreed time slot\"\n}"
+            },
+            "description": "Gig owner removes a previously-approved helper. Drops the GigAssignment and marks the helper's ConversationParticipant row as Left (sets LeftOn/LeaveReason) so they can no longer post in the gig chat. Reason is required and capped at 500 characters."
+          }
         }
       ]
     },
@@ -841,7 +858,7 @@
     },
     {
       "name": "Chat",
-      "description": "Chat system (4.1.4). Supports text, image, and location messaging, a curated AI chatbot, and real-time delivery via SignalR hub at /hubs/chat. All endpoints require JWT auth.",
+      "description": "Gig-scoped chat system. Every non-bot conversation is tied to a specific gig and its active participants (client + approved helpers). Conversations are created automatically when a helper's proposal is approved; helpers are removed when the gig owner calls DELETE /api/gigs/{gigId}/helpers/{helperId}. Messages go through a moderation pipeline that blocks external links, phone numbers, emails, and flagged content from a multilingual toxicity model. Real-time delivery via SignalR hub at /hubs/chat. All endpoints require JWT auth.",
       "item": [
         {
           "name": "List My Conversations",
@@ -852,35 +869,8 @@
               "raw": "{{baseUrl}}/api/chat/conversations",
               "host": ["{{baseUrl}}"],
               "path": ["api", "chat", "conversations"]
-            }
-          }
-        },
-        {
-          "name": "Start Conversation",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "var json = pm.response.json();",
-                  "if (json && json.data) pm.collectionVariables.set('conversationId', json.data);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": {
-              "raw": "{{baseUrl}}/api/chat/conversations",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "chat", "conversations"]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"otherUserId\": \"{{otherUserId}}\",\n  \"gigId\": null\n}"
-            }
+            "description": "Returns every conversation the caller currently participates in (active gig chats) plus their private bot conversation if it exists. Each item includes the gig title, participant list (with role and leave state), last message, and unread count."
           }
         },
         {
@@ -1075,6 +1065,20 @@
               "raw": "{\n  \"message\": \"How do I verify my identity on Engzly?\",\n  \"history\": []\n}"
             },
             "description": "Direct call to the Python chat endpoint. Embeds the message, ranks it against the curated Engzly FAQ knowledge base, and returns the best-matching answer with an intent label and cosine-based confidence score."
+          }
+        },
+        {
+          "name": "Moderate (toxicity check)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{categoryAiBaseUrl}}/moderate", "host": ["{{categoryAiBaseUrl}}"], "path": ["moderate"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"I need help moving furniture tomorrow morning.\"\n}"
+            },
+            "description": "Runs the input text through a multilingual toxicity classifier (unitary/multilingual-toxic-xlm-roberta) and returns { flagged, score, categories, method }. Used by the .NET chat pipeline to block profane messages before they are persisted. Fails open (returns flagged=false with method=disabled) if the model failed to load."
           }
         },
         {

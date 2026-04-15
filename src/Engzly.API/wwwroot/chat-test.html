@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Engzly Chat Tester</title>
+    <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.0/dist/browser/signalr.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        header {
+            background: #1e293b;
+            padding: 12px 20px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        header h1 {
+            font-size: 18px;
+            margin: 0;
+            color: #38bdf8;
+        }
+        header input {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            padding: 6px 10px;
+            border-radius: 6px;
+            width: 280px;
+        }
+        .panes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: #334155;
+            min-height: calc(100vh - 56px);
+        }
+        .pane {
+            background: #0f172a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .pane-header {
+            background: #1e293b;
+            padding: 10px 14px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pane-header .label {
+            font-weight: 600;
+            color: #fbbf24;
+        }
+        .status {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            background: #475569;
+        }
+        .status.connected { background: #16a34a; color: #fff; }
+        .status.disconnected { background: #dc2626; color: #fff; }
+        .section {
+            padding: 10px 14px;
+            border-bottom: 1px solid #1e293b;
+        }
+        .section h3 {
+            margin: 0 0 8px 0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+        }
+        .row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+        input[type=text], input[type=email], input[type=password], input[type=number], select {
+            flex: 1;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        button {
+            background: #0ea5e9;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        button:hover { background: #0284c7; }
+        button.secondary { background: #475569; }
+        button.secondary:hover { background: #334155; }
+        button.danger { background: #dc2626; }
+        button.danger:hover { background: #b91c1c; }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .convo-list {
+            max-height: 140px;
+            overflow-y: auto;
+            border: 1px solid #1e293b;
+            border-radius: 4px;
+        }
+        .convo-item {
+            padding: 8px 10px;
+            border-bottom: 1px solid #1e293b;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .convo-item:hover { background: #1e293b; }
+        .convo-item.active { background: #0369a1; color: #fff; }
+        .convo-item .meta {
+            color: #64748b;
+            font-size: 11px;
+            margin-top: 2px;
+        }
+        .unread-badge {
+            background: #f59e0b;
+            color: #000;
+            border-radius: 10px;
+            padding: 1px 6px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+        .messages {
+            flex: 1;
+            min-height: 200px;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding: 10px;
+            background: #0b1220;
+        }
+        .msg {
+            max-width: 75%;
+            margin: 4px 0;
+            padding: 6px 10px;
+            border-radius: 10px;
+            font-size: 13px;
+            position: relative;
+            word-wrap: break-word;
+        }
+        .msg.me {
+            background: #0369a1;
+            color: #fff;
+            margin-left: auto;
+            text-align: right;
+        }
+        .msg.them {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+        .msg.deleted { font-style: italic; color: #64748b; }
+        .msg .time {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-top: 2px;
+        }
+        .msg .actions {
+            margin-top: 4px;
+            display: flex;
+            gap: 6px;
+            justify-content: flex-end;
+        }
+        .msg .actions button {
+            padding: 2px 6px;
+            font-size: 10px;
+        }
+        .msg img { max-width: 200px; border-radius: 6px; display: block; margin-top: 4px; }
+        .composer {
+            padding: 10px;
+            background: #1e293b;
+            border-top: 1px solid #334155;
+        }
+        .composer .row { margin-bottom: 6px; }
+        .log {
+            padding: 10px;
+            max-height: 120px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 11px;
+            background: #020617;
+            border-top: 1px solid #1e293b;
+        }
+        .log .entry { margin-bottom: 2px; color: #94a3b8; }
+        .log .entry.rx { color: #4ade80; }
+        .log .entry.tx { color: #60a5fa; }
+        .log .entry.err { color: #f87171; }
+        .small { font-size: 11px; color: #64748b; }
+        .userinfo {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 4px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Engzly Chat Tester</h1>
+    <label class="small">API base</label>
+    <input id="baseUrl" value="" placeholder="http://localhost:5251" />
+    <label class="small">Hub</label>
+    <input id="hubUrl" value="/hubs/chat" style="width:140px" />
+    <span class="small">Open this page from the API's own origin. Login two users and test real-time send / edit / delete.</span>
+</header>
+
+<div class="panes">
+    <!-- PANE TEMPLATE -->
+    <div class="pane" id="paneA">
+        <div class="pane-header">
+            <span class="label">User A (Client)</span>
+            <span class="status disconnected" data-role="status">offline</span>
+        </div>
+
+        <div class="section">
+            <h3>Login</h3>
+            <div class="row">
+                <input type="email" data-role="email" placeholder="email@example.com" />
+                <input type="password" data-role="password" placeholder="password" />
+            </div>
+            <div class="row">
+                <button data-action="login">Login</button>
+                <button data-action="connect" class="secondary">Connect Hub</button>
+                <button data-action="disconnect" class="secondary">Disconnect</button>
+            </div>
+            <div class="userinfo" data-role="userinfo">not signed in</div>
+        </div>
+
+        <div class="section">
+            <h3>Conversations</h3>
+            <div class="row">
+                <button data-action="refreshConvos">Refresh</button>
+            </div>
+            <div class="convo-list" data-role="convoList"></div>
+        </div>
+
+        <div class="section">
+            <h3>Active Conversation</h3>
+            <div class="small" data-role="convoInfo">Open a gig-scoped conversation from the list. Conversations are created when a proposal is approved.</div>
+            <div class="userinfo" data-role="participants"></div>
+        </div>
+
+        <div class="messages" data-role="messages"></div>
+
+        <div class="composer">
+            <div class="row">
+                <input type="text" data-role="textInput" placeholder="Type a message…" />
+                <button data-action="sendText">Send</button>
+            </div>
+            <div class="row">
+                <input type="file" data-role="imageInput" accept="image/*" />
+                <button data-action="sendImage">Send Image</button>
+            </div>
+            <div class="row">
+                <input type="number" step="any" data-role="lat" placeholder="lat" />
+                <input type="number" step="any" data-role="lng" placeholder="lng" />
+                <button data-action="sendLocation">Send Location</button>
+            </div>
+            <div class="row">
+                <button data-action="markRead" class="secondary">Mark Read</button>
+                <button data-action="askBot" class="secondary">Ask Bot</button>
+            </div>
+        </div>
+
+        <div class="log" data-role="log"></div>
+    </div>
+
+    <!-- SECOND PANE (same markup, different id) -->
+    <div class="pane" id="paneB">
+        <div class="pane-header">
+            <span class="label">User B (Helper)</span>
+            <span class="status disconnected" data-role="status">offline</span>
+        </div>
+
+        <div class="section">
+            <h3>Login</h3>
+            <div class="row">
+                <input type="email" data-role="email" placeholder="email@example.com" />
+                <input type="password" data-role="password" placeholder="password" />
+            </div>
+            <div class="row">
+                <button data-action="login">Login</button>
+                <button data-action="connect" class="secondary">Connect Hub</button>
+                <button data-action="disconnect" class="secondary">Disconnect</button>
+            </div>
+            <div class="userinfo" data-role="userinfo">not signed in</div>
+        </div>
+
+        <div class="section">
+            <h3>Conversations</h3>
+            <div class="row">
+                <button data-action="refreshConvos">Refresh</button>
+            </div>
+            <div class="convo-list" data-role="convoList"></div>
+        </div>
+
+        <div class="section">
+            <h3>Active Conversation</h3>
+            <div class="small" data-role="convoInfo">Open a gig-scoped conversation from the list. Conversations are created when a proposal is approved.</div>
+            <div class="userinfo" data-role="participants"></div>
+        </div>
+
+        <div class="messages" data-role="messages"></div>
+
+        <div class="composer">
+            <div class="row">
+                <input type="text" data-role="textInput" placeholder="Type a message…" />
+                <button data-action="sendText">Send</button>
+            </div>
+            <div class="row">
+                <input type="file" data-role="imageInput" accept="image/*" />
+                <button data-action="sendImage">Send Image</button>
+            </div>
+            <div class="row">
+                <input type="number" step="any" data-role="lat" placeholder="lat" />
+                <input type="number" step="any" data-role="lng" placeholder="lng" />
+                <button data-action="sendLocation">Send Location</button>
+            </div>
+            <div class="row">
+                <button data-action="markRead" class="secondary">Mark Read</button>
+                <button data-action="askBot" class="secondary">Ask Bot</button>
+            </div>
+        </div>
+
+        <div class="log" data-role="log"></div>
+    </div>
+</div>
+
+<script>
+(() => {
+    const baseUrlInput = document.getElementById('baseUrl');
+    const hubUrlInput = document.getElementById('hubUrl');
+    if (location.protocol === 'file:' || !location.host) {
+        baseUrlInput.value = 'http://localhost:5251';
+    } else {
+        baseUrlInput.value = `${location.protocol}//${location.host}`;
+    }
+
+    function createPane(paneId, label) {
+        const root = document.getElementById(paneId);
+        const state = {
+            root,
+            label,
+            token: null,
+            userId: null,
+            userName: null,
+            connection: null,
+            activeConversationId: null,
+            joinedConversations: new Set(),
+            conversations: [],
+            messages: [],
+            q: (role) => root.querySelector(`[data-role="${role}"]`),
+        };
+
+        const q = state.q;
+
+        function apiBase() { return baseUrlInput.value.replace(/\/$/, ''); }
+
+        function log(message, kind='info') {
+            const el = q('log');
+            const entry = document.createElement('div');
+            entry.className = `entry ${kind}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            el.appendChild(entry);
+            el.scrollTop = el.scrollHeight;
+        }
+
+        function setStatus(text, cls) {
+            const el = q('status');
+            el.textContent = text;
+            el.className = `status ${cls}`;
+        }
+
+        async function api(path, { method='GET', body=null, form=false } = {}) {
+            const headers = {};
+            if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
+            let payload;
+            if (form) {
+                payload = body;
+            } else if (body) {
+                headers['Content-Type'] = 'application/json';
+                payload = JSON.stringify(body);
+            }
+            const resp = await fetch(`${apiBase()}${path}`, { method, headers, body: payload });
+            const text = await resp.text();
+            let json;
+            try { json = text ? JSON.parse(text) : null; } catch { json = { raw: text }; }
+            if (!resp.ok) {
+                const msg = (json && (json.message || json.title)) || `HTTP ${resp.status}`;
+                throw new Error(msg);
+            }
+            return json;
+        }
+
+        async function login() {
+            const email = q('email').value.trim();
+            const password = q('password').value;
+            if (!email || !password) { log('email and password required', 'err'); return; }
+            try {
+                const r = await api('/api/users/login', { method: 'POST', body: { email, password } });
+                const data = r?.data;
+                if (!data?.accessToken) throw new Error('no token in response');
+                state.token = data.accessToken;
+                state.userId = data.userId;
+                state.userName = data.userName;
+                q('userinfo').textContent = `${data.userName} · ${data.userId}`;
+                log(`logged in as ${data.userName}`, 'tx');
+            } catch (e) {
+                log(`login failed: ${e.message}`, 'err');
+            }
+        }
+
+        async function connect() {
+            if (!state.token) { log('login first', 'err'); return; }
+            if (state.connection) { log('already connected', 'err'); return; }
+            const hub = hubUrlInput.value;
+            const url = `${apiBase()}${hub}`;
+            const conn = new signalR.HubConnectionBuilder()
+                .withUrl(url, { accessTokenFactory: () => state.token })
+                .withAutomaticReconnect()
+                .build();
+
+            conn.on('messageReceived', (m) => {
+                log(`rx messageReceived id=${m.id} conv=${m.conversationId}`, 'rx');
+                upsertMessage(m);
+            });
+            conn.on('messageEdited', (m) => {
+                log(`rx messageEdited id=${m.id}`, 'rx');
+                upsertMessage(m);
+            });
+            conn.on('messageDeleted', (p) => {
+                log(`rx messageDeleted id=${p.messageId}`, 'rx');
+                markMessageDeleted(p.messageId);
+            });
+            conn.on('conversationUpdated', (p) => {
+                log(`rx conversationUpdated conv=${p.conversationId}`, 'rx');
+                loadConversations();
+            });
+            conn.on('conversationMessageEdited', (p) => {
+                log(`rx conversationMessageEdited conv=${p.conversationId}`, 'rx');
+            });
+            conn.on('conversationMessageDeleted', (p) => {
+                log(`rx conversationMessageDeleted conv=${p.conversationId}`, 'rx');
+            });
+            conn.on('conversationParticipantJoined', (p) => {
+                log(`rx participantJoined conv=${p.conversationId} user=${p.userId}`, 'rx');
+                loadConversations();
+                if (p.conversationId === state.activeConversationId) loadMessages();
+            });
+            conn.on('conversationParticipantLeft', (p) => {
+                log(`rx participantLeft conv=${p.conversationId} user=${p.userId} reason=${p.reason ?? ''}`, 'rx');
+                loadConversations();
+                if (p.conversationId === state.activeConversationId) loadMessages();
+            });
+
+            try {
+                await conn.start();
+                state.connection = conn;
+                setStatus('connected', 'connected');
+                log('hub connected', 'tx');
+                // rejoin active convo
+                if (state.activeConversationId) await joinConversation(state.activeConversationId);
+            } catch (e) {
+                log(`hub connect failed: ${e.message}`, 'err');
+            }
+        }
+
+        async function disconnect() {
+            if (!state.connection) return;
+            try { await state.connection.stop(); } catch {}
+            state.connection = null;
+            state.joinedConversations.clear();
+            setStatus('offline', 'disconnected');
+            log('hub disconnected', 'tx');
+        }
+
+        async function joinConversation(conversationId) {
+            if (!state.connection || !conversationId) return;
+            if (state.joinedConversations.has(conversationId)) return;
+            try {
+                await state.connection.invoke('JoinConversation', conversationId);
+                state.joinedConversations.add(conversationId);
+                log(`joined conv ${conversationId}`, 'tx');
+            } catch (e) {
+                log(`join failed: ${e.message}`, 'err');
+            }
+        }
+
+        async function loadConversations() {
+            if (!state.token) return;
+            try {
+                const r = await api('/api/chat/conversations');
+                const list = r?.data ?? [];
+                state.conversations = list;
+                const el = q('convoList');
+                el.innerHTML = '';
+                list.forEach(c => {
+                    const item = document.createElement('div');
+                    item.className = 'convo-item' + (c.id === state.activeConversationId ? ' active' : '');
+                    const title = c.isBot ? '🤖 Bot Assistant' : (c.title || c.gigTitle || 'Gig Chat');
+                    const activeCount = (c.participants || []).filter(p => !p.leftOn).length;
+                    item.innerHTML = `
+                        <div><strong>${escapeHtml(title)}</strong>${c.unreadCount ? `<span class="unread-badge">${c.unreadCount}</span>` : ''}</div>
+                        <div class="meta">${escapeHtml(c.lastMessageText || '').slice(0,60)}</div>
+                        <div class="meta">${c.isBot ? 'bot' : `${activeCount} participant${activeCount === 1 ? '' : 's'}`} · ${c.id}</div>
+                    `;
+                    item.onclick = () => openConversation(c.id);
+                    el.appendChild(item);
+                });
+                if (state.activeConversationId) renderConvoInfo();
+            } catch (e) {
+                log(`loadConversations failed: ${e.message}`, 'err');
+            }
+        }
+
+        function renderConvoInfo() {
+            const convo = (state.conversations || []).find(c => c.id === state.activeConversationId);
+            const infoEl = q('convoInfo');
+            const partsEl = q('participants');
+            if (!convo) {
+                infoEl.textContent = 'Open a gig-scoped conversation from the list.';
+                partsEl.textContent = '';
+                return;
+            }
+            if (convo.isBot) {
+                infoEl.textContent = '🤖 Bot conversation';
+                partsEl.textContent = '';
+                return;
+            }
+            infoEl.innerHTML = `<strong>${escapeHtml(convo.title || convo.gigTitle || 'Gig Chat')}</strong> · gigId=${escapeHtml(convo.gigId || '')}`;
+            const parts = (convo.participants || []).map(p => {
+                const roleLabel = p.role === 1 ? 'Client' : 'Helper';
+                const state = p.leftOn ? `left (${escapeHtml(p.leaveReason || '—')})` : 'active';
+                return `${escapeHtml(p.userName || p.userId)} · ${roleLabel} · ${state}`;
+            });
+            partsEl.innerHTML = parts.join('<br/>');
+        }
+
+        async function openConversation(conversationId) {
+            state.activeConversationId = conversationId;
+            await joinConversation(conversationId);
+            await loadMessages();
+            await loadConversations();
+            renderConvoInfo();
+        }
+
+        async function loadMessages() {
+            if (!state.activeConversationId) return;
+            try {
+                const r = await api(`/api/chat/conversations/${state.activeConversationId}/messages?page=1&pageSize=100`);
+                state.messages = r?.data ?? [];
+                renderMessages();
+            } catch (e) {
+                log(`loadMessages failed: ${e.message}`, 'err');
+            }
+        }
+
+        function upsertMessage(m) {
+            if (m.conversationId !== state.activeConversationId) {
+                loadConversations();
+                return;
+            }
+            const idx = state.messages.findIndex(x => x.id === m.id);
+            if (idx >= 0) state.messages[idx] = m;
+            else state.messages.push(m);
+            renderMessages();
+        }
+
+        function markMessageDeleted(messageId) {
+            const msg = state.messages.find(m => m.id === messageId);
+            if (msg) {
+                msg.isDeleted = true;
+                msg.text = null;
+                msg.imageUrl = null;
+                renderMessages();
+            }
+        }
+
+        function renderMessages() {
+            const el = q('messages');
+            el.innerHTML = '';
+            state.messages
+                .sort((a,b) => new Date(a.sentOn) - new Date(b.sentOn))
+                .forEach(m => {
+                    const div = document.createElement('div');
+                    const mine = m.senderId === state.userId;
+                    div.className = `msg ${mine ? 'me' : 'them'}${m.isDeleted ? ' deleted' : ''}`;
+
+                    let body = '';
+                    if (m.isDeleted) {
+                        body = '<em>🗑 This message was deleted</em>';
+                    } else if (m.type === 1) {
+                        body = escapeHtml(m.text || '');
+                    } else if (m.type === 2) {
+                        const url = m.imageUrl?.startsWith('http') ? m.imageUrl : `${apiBase()}${m.imageUrl}`;
+                        body = `<img src="${url}" alt="image" />`;
+                    } else if (m.type === 3) {
+                        body = `📍 <a href="https://maps.google.com/?q=${m.latitude},${m.longitude}" target="_blank" style="color:#fbbf24">${m.latitude}, ${m.longitude}</a>`;
+                    } else {
+                        body = `<span class="small">${escapeHtml(m.text || '')}</span>`;
+                    }
+
+                    div.innerHTML = `
+                        <div>${body}</div>
+                        <div class="time">${new Date(m.sentOn).toLocaleTimeString()}${m.editedOn ? ' · edited' : ''}</div>
+                    `;
+
+                    if (mine && !m.isDeleted && m.type === 1) {
+                        const actions = document.createElement('div');
+                        actions.className = 'actions';
+                        const editBtn = document.createElement('button');
+                        editBtn.className = 'secondary';
+                        editBtn.textContent = 'edit';
+                        editBtn.onclick = () => editMessage(m);
+                        const delBtn = document.createElement('button');
+                        delBtn.className = 'danger';
+                        delBtn.textContent = 'delete';
+                        delBtn.onclick = () => deleteMessage(m);
+                        actions.appendChild(editBtn);
+                        actions.appendChild(delBtn);
+                        div.appendChild(actions);
+                    } else if (mine && !m.isDeleted) {
+                        const actions = document.createElement('div');
+                        actions.className = 'actions';
+                        const delBtn = document.createElement('button');
+                        delBtn.className = 'danger';
+                        delBtn.textContent = 'delete';
+                        delBtn.onclick = () => deleteMessage(m);
+                        actions.appendChild(delBtn);
+                        div.appendChild(actions);
+                    }
+
+                    el.appendChild(div);
+                });
+            el.scrollTop = el.scrollHeight;
+        }
+
+        async function sendText() {
+            const text = q('textInput').value.trim();
+            if (!text) return;
+            if (!state.activeConversationId) { log('no active conversation', 'err'); return; }
+            try {
+                const r = await api('/api/chat/messages/text', {
+                    method: 'POST',
+                    body: { conversationId: state.activeConversationId, text },
+                });
+                q('textInput').value = '';
+                upsertMessage(r.data);
+                log(`tx sendText id=${r.data?.id}`, 'tx');
+            } catch (e) {
+                log(`sendText failed: ${e.message}`, 'err');
+            }
+        }
+
+        async function sendImage() {
+            const file = q('imageInput').files[0];
+            if (!file) { log('pick an image first', 'err'); return; }
+            if (!state.activeConversationId) { log('no active conversation', 'err'); return; }
+            const fd = new FormData();
+            fd.append('conversationId', state.activeConversationId);
+            fd.append('image', file);
+            try {
+                const r = await api('/api/chat/messages/image', { method: 'POST', body: fd, form: true });
+                upsertMessage(r.data);
+                log(`tx sendImage id=${r.data?.id}`, 'tx');
+            } catch (e) {
+                log(`sendImage failed: ${e.message}`, 'err');
+            }
+        }
+
+        async function sendLocation() {
+            const lat = parseFloat(q('lat').value);
+            const lng = parseFloat(q('lng').value);
+            if (Number.isNaN(lat) || Number.isNaN(lng)) { log('lat/lng required', 'err'); return; }
+            if (!state.activeConversationId) { log('no active conversation', 'err'); return; }
+            try {
+                const r = await api('/api/chat/messages/location', {
+                    method: 'POST',
+                    body: { conversationId: state.activeConversationId, latitude: lat, longitude: lng },
+                });
+                upsertMessage(r.data);
+                log(`tx sendLocation id=${r.data?.id}`, 'tx');
+            } catch (e) {
+                log(`sendLocation failed: ${e.message}`, 'err');
+            }
+        }
+
+        async function editMessage(m) {
+            const next = prompt('New text', m.text || '');
+            if (next == null || next === m.text) return;
+            try {
+                const r = await api(`/api/chat/messages/${m.id}`, { method: 'PATCH', body: { text: next } });
+                upsertMessage(r.data);
+                log(`tx editMessage id=${m.id}`, 'tx');
+            } catch (e) {
+                log(`editMessage failed: ${e.message}`, 'err');
+            }
+        }
+
+        async function deleteMessage(m) {
+            if (!confirm('Delete this message for everyone?')) return;
+            try {
+                await api(`/api/chat/messages/${m.id}`, { method: 'DELETE' });
+                markMessageDeleted(m.id);
+                log(`tx deleteMessage id=${m.id}`, 'tx');
+            } catch (e) {
+                log(`deleteMessage failed: ${e.message}`, 'err');
+            }
+        }
+
+        async function markRead() {
+            if (!state.activeConversationId) return;
+            try {
+                const r = await api(`/api/chat/conversations/${state.activeConversationId}/read`, { method: 'PATCH' });
+                log(`tx markRead count=${r.data}`, 'tx');
+                await loadConversations();
+            } catch (e) {
+                log(`markRead failed: ${e.message}`, 'err');
+            }
+        }
+
+        async function askBot() {
+            const text = q('textInput').value.trim() || prompt('Ask the bot:');
+            if (!text) return;
+            try {
+                const r = await api('/api/chat/bot/ask', { method: 'POST', body: { text } });
+                const data = r.data;
+                log(`tx askBot intent=${data?.intent} conf=${data?.confidence}`, 'tx');
+                state.activeConversationId = data.conversationId;
+                await loadConversations();
+                await loadMessages();
+                await joinConversation(data.conversationId);
+                q('textInput').value = '';
+            } catch (e) {
+                log(`askBot failed: ${e.message}`, 'err');
+            }
+        }
+
+        const actions = {
+            login, connect, disconnect,
+            refreshConvos: loadConversations,
+            sendText, sendImage, sendLocation,
+            markRead, askBot,
+        };
+
+        root.querySelectorAll('[data-action]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const fn = actions[btn.dataset.action];
+                if (fn) fn();
+            });
+        });
+
+        q('textInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') sendText();
+        });
+
+        return state;
+    }
+
+    function escapeHtml(s) {
+        return String(s ?? '')
+            .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+            .replaceAll('"','&quot;').replaceAll("'",'&#39;');
+    }
+
+    createPane('paneA', 'A');
+    createPane('paneB', 'B');
+})();
+</script>
+</body>
+</html>

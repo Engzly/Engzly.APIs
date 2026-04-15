@@ -71,6 +71,17 @@ namespace Engzly.API
             services.AddSignalR();
             services.AddScoped<IChatNotifier, SignalRChatNotifier>();
 
+            services.AddCors(options =>
+            {
+                options.AddPolicy("EngzlyCors", policy =>
+                {
+                    policy.SetIsOriginAllowed(_ => true)
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                });
+            });
+
             // 3️⃣ Swagger
             services.AddSwaggerGen(c =>
             {
