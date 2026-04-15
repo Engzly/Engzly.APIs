@@ -1,5 +1,6 @@
 ﻿using Engzly.Domain.Entities.Chat;
 using Engzly.Domain.Entities.Gigs;
+using Engzly.Domain.Entities.Payments;
 
 
 namespace Engzly.Application.Interfaces.Repositories
@@ -12,6 +13,9 @@ namespace Engzly.Application.Interfaces.Repositories
         IGenericRepository<GigAssignment, string> GigAssignments { get; }
         IGenericRepository<Conversation, string> Conversations { get; }
         IGenericRepository<ConversationParticipant, string> ConversationParticipants { get; }
+        IGenericRepository<Payment, string> Payments { get; }
+        IGenericRepository<PaymentEvent, string> PaymentEvents { get; }
+        IGenericRepository<HelperWallet, string> HelperWallets { get; }
 
 
         Task BeginTransactionAsync(CancellationToken cancellationToken = default);

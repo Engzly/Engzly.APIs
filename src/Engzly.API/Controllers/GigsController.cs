@@ -96,6 +96,14 @@ namespace Engzly.API.Controllers
 
 
         [Authorize]
+        [HttpPost("{id}/start")]
+        public async Task<IActionResult> Start(string id)
+        {
+            var result = await _mediator.Send(new StartGigCommand { GigId = id });
+            return Resolve(result);
+        }
+
+        [Authorize]
         [HttpPost("{id}/complete")]
         public async Task<IActionResult> Complete(string id)
         {

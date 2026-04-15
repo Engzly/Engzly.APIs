@@ -1,6 +1,7 @@
 ﻿using Engzly.Application.Interfaces.Repositories;
 using Engzly.Domain.Entities.Chat;
 using Engzly.Domain.Entities.Gigs;
+using Engzly.Domain.Entities.Payments;
 using Engzly.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -16,6 +17,9 @@ namespace Engzly.Infrastructure.Persistence.Repositories
         private IGenericRepository<GigAssignment, string>? _gigAssignments;
         private IGenericRepository<Conversation, string>? _conversations;
         private IGenericRepository<ConversationParticipant, string>? _conversationParticipants;
+        private IGenericRepository<Payment, string>? _payments;
+        private IGenericRepository<PaymentEvent, string>? _paymentEvents;
+        private IGenericRepository<HelperWallet, string>? _helperWallets;
         public UnitOfWork(EngzlyDbContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -34,6 +38,15 @@ namespace Engzly.Infrastructure.Persistence.Repositories
 
         public IGenericRepository<ConversationParticipant, string> ConversationParticipants
             => _conversationParticipants ??= new GenericRepository<ConversationParticipant, string>(_context);
+
+        public IGenericRepository<Payment, string> Payments
+            => _payments ??= new GenericRepository<Payment, string>(_context);
+
+        public IGenericRepository<PaymentEvent, string> PaymentEvents
+            => _paymentEvents ??= new GenericRepository<PaymentEvent, string>(_context);
+
+        public IGenericRepository<HelperWallet, string> HelperWallets
+            => _helperWallets ??= new GenericRepository<HelperWallet, string>(_context);
 
         public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
