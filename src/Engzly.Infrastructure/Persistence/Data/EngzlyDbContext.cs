@@ -2,6 +2,7 @@
 using Engzly.Domain.Entities.Gigs;
 using Engzly.Domain.Entities.Identity;
 using Engzly.Domain.Entities.Notifications;
+using Engzly.Domain.Entities.Payments;
 using Engzly.Domain.Entities.Reviews;
 using Engzly.Domain.Entities.Verification;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -23,6 +24,9 @@ namespace Engzly.Infrastructure.Persistence.Data
         public DbSet<Conversation> Conversations { get; private set; }
         public DbSet<ConversationParticipant> ConversationParticipants { get; private set; }
         public DbSet<ChatMessage> ChatMessages { get; private set; }
+        public DbSet<Payment> Payments { get; private set; }
+        public DbSet<PaymentEvent> PaymentEvents { get; private set; }
+        public DbSet<HelperWallet> HelperWallets { get; private set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
