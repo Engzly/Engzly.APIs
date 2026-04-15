@@ -6,9 +6,7 @@ namespace Engzly.Application.Features.Otp.Commands.Models
 {
     public class SendOtpCommand : IRequest<Response<string>>
     {
-        public string UserId { get; set; }
+        public string Email { get; set; } = string.Empty;
         public OtpPurpose Purpose { get; set; }
-        public OtpChannel Channel { get; set; }
-        public string Destination { get; set; } // email or phone
     }
 }

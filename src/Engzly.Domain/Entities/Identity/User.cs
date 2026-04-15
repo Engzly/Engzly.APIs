@@ -35,6 +35,9 @@ namespace Engzly.Domain.Entities.Identity
 
         public DateTime? OtpLastSentAtUtc { get; set; }
 
+        public int OtpSendCountToday { get; set; } = 0;
+        public DateTime? OtpSendQuotaResetAtUtc { get; set; }
+
         // Navigation Property to Document(Photos )
 
         public ICollection<Gig> OwnedGigs { get; set; } = new HashSet<Gig>();

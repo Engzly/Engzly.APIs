@@ -32,7 +32,12 @@ public class LoginCommandHandler(
             return BadRequest<LoginResponse>(InvalidEmailOrPassword);
         }
 
-        // Business Rule: User status must be Active
+        if (user.Status == UserStatus.Pending)
+        {
+            logger.LogWarning("Login blocked: User {UserId} has not verified email", user.Id);
+            return BadRequest<LoginResponse>("Email not verified. Please verify with the code we sent you.");
+        }
+
         if (user.Status != UserStatus.Active)
         {
             logger.LogWarning("Login failed: User {UserId} status is {Status}", user.Id, user.Status);

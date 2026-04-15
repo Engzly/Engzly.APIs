@@ -1,8 +1,7 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Engzly.Application.Common.Bases;
 using Engzly.Application.Features.Users.Commands.Models;
-using Engzly.Application.Interfaces.Authentication;
-using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
+using Engzly.Application.Interfaces;
 using Engzly.Application.Responses.UsersResponse;
 using Engzly.Domain.Entities.Identity;
 using Engzly.Domain.Enums;
@@ -15,8 +14,7 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
     public class CreateUserCommandHandler(
         UserManager<User> userManager,
         IMapper mapper,
-        ITokenService tokenService,
-        IFileService fileService,
+        IOtpService otpService,
         ILogger<CreateUserCommandHandler> logger)
         : ResponseHandler,
           IRequestHandler<CreateUserCommand, Response<CreateUserResponse>>
@@ -28,7 +26,6 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
                 request.UserName
             );
 
-            // Business Rule: Username must be unique
             var isUserNameExist = await userManager.FindByNameAsync(request.UserName);
             if (isUserNameExist != null)
             {
@@ -39,10 +36,10 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
                 return BadRequest<CreateUserResponse>("User Name already exists, cannot create duplicate account.");
             }
 
-            // Map request to User entity
             var user = mapper.Map<User>(request);
+            user.Status = UserStatus.Pending;
+            user.EmailConfirmed = false;
 
-            // Create user in Identity
             var result = await userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
             {
@@ -55,30 +52,35 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
                 return BadRequest<CreateUserResponse>("Failed to create user", errors);
             }
 
-            // Set default user properties
-            user.Status = UserStatus.Active;
-            user.EmailConfirmed = true;
-
-            // Generate tokens
-            var accessToken = await tokenService.GenerateJwtToken(user);
-            user.RefreshToken = tokenService.GenerateRefreshToken();
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-            await userManager.UpdateAsync(user);
-
             logger.LogInformation(
-                "User {UserName} created successfully with Id {UserId}",
+                "User {UserName} created in Pending state with Id {UserId}",
                 request.UserName,
                 user.Id
             );
 
+            var (otpOk, otpError) = await otpService.SendOtpAsync(
+                user.Id,
+                OtpPurpose.VerifyAccount,
+                OtpChannel.Email,
+                user.Email!,
+                cancellationToken);
+
+            if (!otpOk)
+            {
+                logger.LogWarning(
+                    "User {UserId} created but verification OTP failed to send: {Error}",
+                    user.Id, otpError);
+            }
+
             var response = new CreateUserResponse
             {
                 UserId = user.Id,
-                AccessToken = accessToken,
-                RefreshToken = user.RefreshToken
+                RequiresEmailVerification = true
             };
 
-            return Success(response, "User created successfully");
+            return Success(
+                response,
+                "Account created. A verification code has been sent to your email.");
         }
     }
 }

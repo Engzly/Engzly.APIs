@@ -65,8 +65,6 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
-        services.AddScoped<IWhatsAppSender, WhatsAppSender>();
-        services.AddHttpClient<IWhatsAppSender, WhatsAppSender>();
         services.Configure<SmtpOptions>(configuration.GetSection("Smtp"));
 
         services.AddMassTransit(config =>
