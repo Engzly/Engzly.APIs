@@ -2,46 +2,117 @@ using Engzly.Application.Common.Bases;
 using Engzly.Application.Features.Gigs.Commands.Models;
 using Engzly.Application.Interfaces.Authentication;
 using Engzly.Application.Interfaces.Repositories;
-using Engzly.Domain.Entities.Gigs;
+using Engzly.Domain.Entities.Payments;
 using Engzly.Domain.Enums;
 using Engzly.Domain.Specifications;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Engzly.Application.Features.Gigs.Commands.Handlers
 {
-
     public sealed class VerifyTaskCommandHandler(
-            IGenericRepository<Gig, string> _gigRepo,
-            ICurrentUserService _currentUser)
+            IUnitOfWork unitOfWork,
+            ICurrentUserService currentUser,
+            ILogger<VerifyTaskCommandHandler> logger)
             : ResponseHandler, IRequestHandler<VerifyTaskCommand, Response<string>>
     {
-        public async Task<Response<string>> Handle(VerifyTaskCommand request, CancellationToken cancellationToken)
+        public async Task<Response<string>> Handle(VerifyTaskCommand request, CancellationToken ct)
         {
-            var gig = await _gigRepo.GetByIdAsync(request.Id, new GigWithAssignmentsByIdSpecification(), cancellationToken);
+            var gig = await unitOfWork.Gigs.GetByIdAsync(request.Id, new GigWithAssignmentsByIdSpecification(), ct);
             if (gig == null)
                 return NotFound<string>("Task not found");
 
-            var currentUser = _currentUser.GetCurrentUser();
-            if (currentUser == null)
+            var me = currentUser.GetCurrentUser();
+            if (me == null)
                 return Unauthorized<string>();
 
-            var currentUserId = currentUser.Id;
-            if (gig.OwnerId != currentUserId)
+            if (gig.OwnerId != me.Id)
                 return Unauthorized<string>();
 
             if (gig.Status != GigStatus.PendingVerification)
                 return BadRequest<string>("Task must be pending verification before it can be verified.");
 
-            gig.Status = GigStatus.Completed;
-            gig.CompletedOn = DateTime.UtcNow;
-            gig.LastModifiedOn = DateTime.UtcNow;
+            var payment = (await unitOfWork.Payments.GetAllAsync(new PaymentByGigSpec(gig.Id), ct)).FirstOrDefault();
+            if (payment == null)
+                return BadRequest<string>("No escrow payment found for this gig.");
 
-            _gigRepo.Update(gig);
-            await _gigRepo.CompleteAsync(cancellationToken);
+            if (payment.Status == PaymentStatus.Released)
+                return BadRequest<string>("Escrow has already been released for this gig.");
 
-            return Success(gig.Id, "Task verified and completed successfully.");
-            
+            if (payment.Status != PaymentStatus.Funded)
+                return BadRequest<string>($"Escrow must be funded before release (current: {payment.Status}).");
 
+            if (string.IsNullOrWhiteSpace(payment.HelperUserId))
+                return BadRequest<string>("Payment has no helper assigned.");
+
+            await unitOfWork.BeginTransactionAsync(ct);
+            try
+            {
+                var now = DateTime.UtcNow;
+
+                gig.Status = GigStatus.Completed;
+                gig.CompletedOn = now;
+                gig.LastModifiedOn = now;
+                unitOfWork.Gigs.Update(gig);
+
+                payment.Status = PaymentStatus.Released;
+                payment.ReleasedAtUtc = now;
+                payment.UpdatedAtUtc = now;
+                unitOfWork.Payments.Update(payment);
+
+                var wallet = (await unitOfWork.HelperWallets.GetAllAsync(new WalletByUserSpec(payment.HelperUserId!), ct)).FirstOrDefault();
+                if (wallet == null)
+                {
+                    wallet = new HelperWallet
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        UserId = payment.HelperUserId!,
+                        Currency = payment.Currency,
+                        Balance = 0m,
+                        PendingBalance = payment.HelperAmount,
+                        UpdatedAtUtc = now
+                    };
+                    await unitOfWork.HelperWallets.AddAsync(wallet, ct);
+                }
+                else
+                {
+                    wallet.PendingBalance += payment.HelperAmount;
+                    wallet.UpdatedAtUtc = now;
+                    unitOfWork.HelperWallets.Update(wallet);
+                }
+
+                await unitOfWork.PaymentEvents.AddAsync(new PaymentEvent
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    PaymentId = payment.Id,
+                    Type = PaymentEventType.Released,
+                    OccurredAtUtc = now
+                }, ct);
+
+                await unitOfWork.Payments.CompleteAsync(ct);
+                await unitOfWork.CommitTransactionAsync(ct);
+            }
+            catch
+            {
+                await unitOfWork.RollbackTransactionAsync(ct);
+                throw;
+            }
+
+            logger.LogInformation(
+                "VerifyTask: released escrow {PaymentId} for gig {GigId} — credited {Amount} EGP pending to helper {HelperId}",
+                payment.Id, gig.Id, payment.HelperAmount, payment.HelperUserId);
+
+            return Success(gig.Id, "Task verified and escrow released to helper wallet.");
+        }
+
+        private sealed class PaymentByGigSpec : BaseSpecification<Payment>
+        {
+            public PaymentByGigSpec(string gigId) : base(p => p.GigId == gigId) { }
+        }
+
+        private sealed class WalletByUserSpec : BaseSpecification<HelperWallet>
+        {
+            public WalletByUserSpec(string userId) : base(w => w.UserId == userId) { }
         }
     }
 }
