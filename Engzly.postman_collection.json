@@ -1159,6 +1159,25 @@
             },
             "description": "Entry point Fawaterak will call after the client pays the invoice. The handler: (1) verifies X-Fawaterak-Signature against the raw body using FawaterakOptions.HashKey via HMAC-SHA256; (2) looks up the Payment by ProviderInvoiceId; (3) idempotently transitions the Payment to Funded and the Gig to InProgress, or records a failure event. Replace the signature header and invoice id with real values when testing end-to-end."
           }
+        },
+        {
+          "name": "Admin — Refund Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/payments/{{paymentId}}/refund",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments", "{{paymentId}}", "refund"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Client requested cancellation\"\n}"
+            },
+            "description": "Admin-only. Refunds a Funded or AwaitingFunding payment: flips Payment.Status to Refunded, cancels any in-flight gig, and records a Refunded PaymentEvent with the admin id and reason. Released payments are rejected because the helper wallet has already been credited."
+          }
         }
       ]
     }
