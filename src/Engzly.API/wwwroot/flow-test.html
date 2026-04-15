@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Engzly End-to-End Flow Tester</title>
+    <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.0/dist/browser/signalr.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            background: #0f172a;
+            color: #e2e8f0;
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            min-height: 100vh;
+        }
+        header {
+            grid-column: 1 / -1;
+            background: #1e293b;
+            padding: 12px 20px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        header h1 { margin: 0; font-size: 18px; color: #38bdf8; }
+        header input {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            padding: 6px 10px;
+            border-radius: 6px;
+        }
+        header .sp { flex: 1; }
+        main {
+            padding: 20px;
+            overflow-y: auto;
+        }
+        aside {
+            background: #020617;
+            border-left: 1px solid #334155;
+            padding: 14px;
+            position: sticky;
+            top: 0;
+            align-self: start;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+        .step {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+        }
+        .step h2 {
+            margin: 0 0 10px 0;
+            font-size: 15px;
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .step h2 .num {
+            background: #0369a1;
+            color: #fff;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        .step p.hint {
+            margin: 0 0 10px 0;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        .grid2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .col {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 10px;
+        }
+        .col h3 {
+            margin: 0 0 8px 0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #38bdf8;
+        }
+        .row { display: flex; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+        input[type=text], input[type=email], input[type=password], input[type=number], select, textarea {
+            flex: 1;
+            min-width: 120px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: inherit;
+        }
+        textarea { min-height: 50px; resize: vertical; }
+        button {
+            background: #0ea5e9;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        button:hover { background: #0284c7; }
+        button.secondary { background: #475569; }
+        button.secondary:hover { background: #334155; }
+        button.danger { background: #dc2626; }
+        button.danger:hover { background: #b91c1c; }
+        button.warn { background: #f59e0b; color: #000; }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .pill {
+            display: inline-block;
+            font-size: 10px;
+            background: #0369a1;
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 6px;
+            text-transform: uppercase;
+        }
+        .pill.helper { background: #16a34a; }
+        .state-box {
+            background: #0b1220;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 14px;
+        }
+        .state-box h3 {
+            margin: 0 0 8px 0;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            letter-spacing: 0.5px;
+        }
+        .state-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            font-family: monospace;
+            padding: 3px 0;
+            border-bottom: 1px dashed #1e293b;
+        }
+        .state-row span:first-child { color: #64748b; }
+        .state-row span:last-child {
+            color: #4ade80;
+            text-align: right;
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-all;
+        }
+        .log {
+            background: #020617;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            padding: 8px;
+            max-height: 40vh;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 10px;
+        }
+        .log .entry { margin-bottom: 3px; color: #94a3b8; word-break: break-all; }
+        .log .entry.ok { color: #4ade80; }
+        .log .entry.tx { color: #60a5fa; }
+        .log .entry.err { color: #f87171; }
+        .log .entry.rx { color: #fbbf24; }
+        .messages {
+            max-height: 240px;
+            overflow-y: auto;
+            padding: 8px;
+            background: #020617;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            margin-top: 6px;
+        }
+        .msg {
+            max-width: 75%;
+            margin: 4px 0;
+            padding: 5px 9px;
+            border-radius: 8px;
+            font-size: 11px;
+            word-wrap: break-word;
+        }
+        .msg.me { background: #0369a1; color: #fff; margin-left: auto; }
+        .msg.them { background: #1e293b; color: #e2e8f0; }
+        .msg.deleted { font-style: italic; color: #64748b; }
+        .status-pill {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: #475569;
+        }
+        .status-pill.connected { background: #16a34a; }
+        .status-pill.disconnected { background: #dc2626; }
+        .small { font-size: 11px; color: #64748b; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Engzly Flow Tester</h1>
+    <label class="small">API base</label>
+    <input id="baseUrl" value="" style="width: 220px" />
+    <label class="small">Hub</label>
+    <input id="hubUrl" value="/hubs/chat" style="width: 120px" />
+    <span class="sp"></span>
+    <button class="secondary" onclick="resetAll()">Reset state</button>
+</header>
+
+<main>
+    <!-- STEP 1: REGISTER -->
+    <div class="step">
+        <h2><span class="num">1</span> Register two users</h2>
+        <p class="hint">Creates a Client and a Helper. Each registration returns a userId used for OTP verification in step 2.</p>
+        <div class="grid2">
+            <div class="col">
+                <h3>Client <span class="pill">client</span></h3>
+                <div class="row"><input type="text" id="c_firstName" placeholder="first name" value="Client" /><input type="text" id="c_lastName" placeholder="last name" value="Tester" /></div>
+                <div class="row"><input type="text" id="c_userName" placeholder="username" value="clienttester" /></div>
+                <div class="row"><input type="email" id="c_email" placeholder="email" /><input type="text" id="c_phone" placeholder="phone" value="01011112222" /></div>
+                <div class="row"><input type="password" id="c_password" placeholder="password" value="Passw0rd!" /><input type="text" id="c_city" placeholder="city" value="Cairo" /></div>
+                <div class="row"><button onclick="registerUser('c')">Register Client</button></div>
+            </div>
+            <div class="col">
+                <h3>Helper <span class="pill helper">helper</span></h3>
+                <div class="row"><input type="text" id="h_firstName" placeholder="first name" value="Helper" /><input type="text" id="h_lastName" placeholder="last name" value="Tester" /></div>
+                <div class="row"><input type="text" id="h_userName" placeholder="username" value="helpertester" /></div>
+                <div class="row"><input type="email" id="h_email" placeholder="email" /><input type="text" id="h_phone" placeholder="phone" value="01033334444" /></div>
+                <div class="row"><input type="password" id="h_password" placeholder="password" value="Passw0rd!" /><input type="text" id="h_city" placeholder="city" value="Giza" /></div>
+                <div class="row"><button onclick="registerUser('h')">Register Helper</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 2: OTP VERIFY -->
+    <div class="step">
+        <h2><span class="num">2</span> Verify email (OTP)</h2>
+        <p class="hint">Send an OTP (purpose=VerifyAccount=1, channel=Email=1) to each new user, then enter the received code to confirm. Required before login.</p>
+        <div class="grid2">
+            <div class="col">
+                <h3>Client</h3>
+                <div class="row"><button onclick="sendOtp('c')">Send OTP</button><input type="text" id="c_otp" placeholder="code" /><button onclick="verifyOtp('c')">Verify</button></div>
+            </div>
+            <div class="col">
+                <h3>Helper</h3>
+                <div class="row"><button onclick="sendOtp('h')">Send OTP</button><input type="text" id="h_otp" placeholder="code" /><button onclick="verifyOtp('h')">Verify</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 3: LOGIN -->
+    <div class="step">
+        <h2><span class="num">3</span> Login</h2>
+        <p class="hint">Exchanges email+password for an access token. The token is stored per-role and used for every subsequent authenticated request and SignalR connection.</p>
+        <div class="grid2">
+            <div class="col"><h3>Client</h3><div class="row"><button onclick="login('c')">Login Client</button></div></div>
+            <div class="col"><h3>Helper</h3><div class="row"><button onclick="login('h')">Login Helper</button></div></div>
+        </div>
+    </div>
+
+    <!-- STEP 4: CATEGORIES + CLASSIFY -->
+    <div class="step">
+        <h2><span class="num">4</span> Categories &amp; AI classify</h2>
+        <p class="hint">List the catalog, then let the AI pick the best category for the task title you're about to publish.</p>
+        <div class="row"><button onclick="listCategories()">List Categories</button><select id="categorySelect"><option value="">— pick a category —</option></select></div>
+        <div class="row">
+            <input type="text" id="aiTitle" placeholder="title for AI classify/estimate" value="Deliver groceries from Carrefour to Zamalek" />
+        </div>
+        <div class="row">
+            <textarea id="aiDescription" placeholder="description">Two bags, afternoon pickup, fifth floor walkup drop-off.</textarea>
+        </div>
+        <div class="row">
+            <button onclick="suggestCategory()">Suggest Category</button>
+            <button onclick="estimate()">Estimate Cost</button>
+        </div>
+    </div>
+
+    <!-- STEP 5: PUBLISH GIG -->
+    <div class="step">
+        <h2><span class="num">5</span> Publish gig <span class="pill">client</span></h2>
+        <p class="hint">Creates a task with the selected category. The returned gigId drives the rest of the flow.</p>
+        <div class="row"><input type="number" id="gigBudget" placeholder="budget" value="200" /><input type="number" id="gigTaskers" placeholder="# taskers" value="1" /></div>
+        <div class="row"><input type="number" id="gigLat" placeholder="latitude" value="30.0444" step="any" /><input type="number" id="gigLng" placeholder="longitude" value="31.2357" step="any" /></div>
+        <div class="row"><button onclick="publishGig()">Publish Gig</button><button class="secondary" onclick="listGigs()">List Gigs</button><button class="secondary" onclick="getGigDetails()">Get Details</button></div>
+    </div>
+
+    <!-- STEP 6: PROPOSAL -->
+    <div class="step">
+        <h2><span class="num">6</span> Submit &amp; approve proposal</h2>
+        <p class="hint">Helper sends a proposal on the gig; client views pending proposals and approves one (decision=1). Approval creates the gig conversation and adds both users as participants.</p>
+        <div class="grid2">
+            <div class="col">
+                <h3>Helper</h3>
+                <div class="row"><textarea id="proposalMessage">I can deliver tomorrow morning before 11 AM.</textarea></div>
+                <div class="row"><button onclick="submitProposal()">Submit Proposal</button></div>
+                <div class="row"><button class="secondary" onclick="myProposals()">My Proposals</button></div>
+            </div>
+            <div class="col">
+                <h3>Client</h3>
+                <div class="row"><button onclick="listProposalsForGig()">List Proposals</button></div>
+                <div class="row"><button onclick="approveProposal()">Approve Proposal</button><button class="danger" onclick="rejectProposal()">Reject</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 7: SIGNALR -->
+    <div class="step">
+        <h2><span class="num">7</span> Connect SignalR hubs</h2>
+        <p class="hint">Opens a persistent WebSocket for each role so you can see real-time messageReceived / messageEdited / participantJoined events land live.</p>
+        <div class="grid2">
+            <div class="col">
+                <h3>Client <span class="status-pill disconnected" id="c_hubStatus">offline</span></h3>
+                <div class="row"><button onclick="connectHub('c')">Connect</button><button class="secondary" onclick="disconnectHub('c')">Disconnect</button></div>
+            </div>
+            <div class="col">
+                <h3>Helper <span class="status-pill disconnected" id="h_hubStatus">offline</span></h3>
+                <div class="row"><button onclick="connectHub('h')">Connect</button><button class="secondary" onclick="disconnectHub('h')">Disconnect</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 8: CHAT FLOW -->
+    <div class="step">
+        <h2><span class="num">8</span> Chat: list, open, send</h2>
+        <p class="hint">List each user's conversations — the gig conversation should appear for both. Opening it joins the hub group and loads history. Sending a message also stores messageId so you can edit/delete it in step 9.</p>
+        <div class="grid2">
+            <div class="col">
+                <h3>Client</h3>
+                <div class="row"><button onclick="listConvos('c')">List Conversations</button><button class="secondary" onclick="openGigConvo('c')">Open Gig Chat</button></div>
+                <div class="row"><input type="text" id="c_chatText" placeholder="message..." value="Hi, see you tomorrow!" /><button onclick="sendText('c')">Send</button></div>
+                <div class="messages" id="c_messages"></div>
+            </div>
+            <div class="col">
+                <h3>Helper</h3>
+                <div class="row"><button onclick="listConvos('h')">List Conversations</button><button class="secondary" onclick="openGigConvo('h')">Open Gig Chat</button></div>
+                <div class="row"><input type="text" id="h_chatText" placeholder="message..." value="Got it, on my way!" /><button onclick="sendText('h')">Send</button></div>
+                <div class="messages" id="h_messages"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 9: MODERATION TESTS -->
+    <div class="step">
+        <h2><span class="num">9</span> Moderation test cases</h2>
+        <p class="hint">All of these should be rejected by the moderation pipeline with a 400 and a clear reason. Fire each and watch the log.</p>
+        <div class="grid2">
+            <div class="col">
+                <h3>Blocked content</h3>
+                <div class="row"><button class="warn" onclick="sendModerated('Check this link https://evil.com/free')">Send URL</button></div>
+                <div class="row"><button class="warn" onclick="sendModerated('call me at 01012345678')">Send Phone</button></div>
+                <div class="row"><button class="warn" onclick="sendModerated('email me at hacker@example.com')">Send Email</button></div>
+                <div class="row"><button class="warn" onclick="sendModerated('you are so stupid and worthless')">Send Toxic</button></div>
+            </div>
+            <div class="col">
+                <h3>Edit / Delete</h3>
+                <div class="row"><input type="text" id="c_editText" placeholder="new text" value="edited message" /><button onclick="editMessage()">Edit Last</button></div>
+                <div class="row"><button class="danger" onclick="deleteMessage()">Delete Last</button></div>
+                <div class="row"><button class="secondary" onclick="markRead('c')">Mark Read (client)</button><button class="secondary" onclick="markRead('h')">Mark Read (helper)</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 10: IMAGE + LOCATION -->
+    <div class="step">
+        <h2><span class="num">10</span> Image &amp; location messages</h2>
+        <p class="hint">Image uploads go through multipart/form-data and are stored under /wwwroot/chat. Location sends raw lat/lng to /messages/location.</p>
+        <div class="grid2">
+            <div class="col">
+                <h3>Image (as client)</h3>
+                <div class="row"><input type="file" id="c_imageFile" accept="image/*" /><button onclick="sendImage()">Upload &amp; Send</button></div>
+            </div>
+            <div class="col">
+                <h3>Location (as helper)</h3>
+                <div class="row"><input type="number" id="h_lat" placeholder="lat" value="30.0444" step="any" /><input type="number" id="h_lng" placeholder="lng" value="31.2357" step="any" /><button onclick="sendLocation()">Send</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 11: BOT -->
+    <div class="step">
+        <h2><span class="num">11</span> Chatbot (client asks FAQ)</h2>
+        <p class="hint">Opens / reuses a private bot conversation for the client and asks the curated Engzly FAQ assistant (Python embedding-based).</p>
+        <div class="row"><input type="text" id="botQuestion" placeholder="ask the bot..." value="How does payment work on Engzly?" /><button onclick="askBot()">Ask</button></div>
+    </div>
+
+    <!-- STEP 12: REMOVE HELPER -->
+    <div class="step">
+        <h2><span class="num">12</span> Remove helper from gig <span class="pill">client</span></h2>
+        <p class="hint">Soft-leaves the helper in the gig conversation with a reason and drops the assignment. The helper can no longer post in the chat after this.</p>
+        <div class="row"><input type="text" id="removeReason" placeholder="reason" value="Schedule conflict" /><button class="danger" onclick="removeHelper()">Remove Helper</button></div>
+    </div>
+
+    <!-- STEP 13: COMPLETE + DELETE -->
+    <div class="step">
+        <h2><span class="num">13</span> Complete, verify, delete</h2>
+        <p class="hint">Gig lifecycle wrap-up. Complete marks it done, verify flips it to verified, delete permanently removes it.</p>
+        <div class="row">
+            <button onclick="completeGig()">Complete</button>
+            <button onclick="verifyGig()">Verify</button>
+            <button class="danger" onclick="deleteGig()">Delete Gig</button>
+        </div>
+    </div>
+</main>
+
+<aside>
+    <div class="state-box">
+        <h3>State</h3>
+        <div class="state-row"><span>client.userId</span><span id="st_cUserId">—</span></div>
+        <div class="state-row"><span>client.token</span><span id="st_cToken">—</span></div>
+        <div class="state-row"><span>helper.userId</span><span id="st_hUserId">—</span></div>
+        <div class="state-row"><span>helper.token</span><span id="st_hToken">—</span></div>
+        <div class="state-row"><span>categoryId</span><span id="st_categoryId">—</span></div>
+        <div class="state-row"><span>gigId</span><span id="st_gigId">—</span></div>
+        <div class="state-row"><span>proposalId</span><span id="st_proposalId">—</span></div>
+        <div class="state-row"><span>conversationId</span><span id="st_conversationId">—</span></div>
+        <div class="state-row"><span>messageId</span><span id="st_messageId">—</span></div>
+    </div>
+    <div class="state-box">
+        <h3>Log</h3>
+        <div class="log" id="log"></div>
+    </div>
+</aside>
+
+<script>
+(() => {
+    const baseUrlInput = document.getElementById('baseUrl');
+    const hubUrlInput = document.getElementById('hubUrl');
+    if (location.protocol === 'file:' || !location.host) {
+        baseUrlInput.value = 'http://localhost:5251';
+    } else {
+        baseUrlInput.value = `${location.protocol}//${location.host}`;
+    }
+
+    // Auto-generate unique emails per load so re-running doesn't collide
+    const stamp = Date.now().toString(36);
+    document.getElementById('c_email').value = `client-${stamp}@engzly.test`;
+    document.getElementById('h_email').value = `helper-${stamp}@engzly.test`;
+
+    const state = {
+        c: { token: null, userId: null, userName: null, connection: null, activeConversationId: null, joined: new Set(), messages: [] },
+        h: { token: null, userId: null, userName: null, connection: null, activeConversationId: null, joined: new Set(), messages: [] },
+        categoryId: null,
+        gigId: null,
+        proposalId: null,
+        conversationId: null,
+        messageId: null,
+        lastSentId: { c: null, h: null },
+    };
+    window.__flow = state;
+
+    function apiBase() { return baseUrlInput.value.replace(/\/$/, ''); }
+    function short(v) { if (!v) return '—'; const s = String(v); return s.length > 32 ? s.slice(0, 8) + '…' + s.slice(-6) : s; }
+
+    function refreshStateUi() {
+        document.getElementById('st_cUserId').textContent = short(state.c.userId);
+        document.getElementById('st_cToken').textContent = short(state.c.token);
+        document.getElementById('st_hUserId').textContent = short(state.h.userId);
+        document.getElementById('st_hToken').textContent = short(state.h.token);
+        document.getElementById('st_categoryId').textContent = short(state.categoryId);
+        document.getElementById('st_gigId').textContent = short(state.gigId);
+        document.getElementById('st_proposalId').textContent = short(state.proposalId);
+        document.getElementById('st_conversationId').textContent = short(state.conversationId);
+        document.getElementById('st_messageId').textContent = short(state.messageId);
+    }
+
+    function log(msg, kind='info') {
+        const el = document.getElementById('log');
+        const entry = document.createElement('div');
+        entry.className = `entry ${kind}`;
+        entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        el.insertBefore(entry, el.firstChild);
+    }
+    window.log = log;
+
+    async function api(path, { method='GET', body=null, form=false, role=null } = {}) {
+        const headers = {};
+        const token = role ? state[role].token : (state.c.token || state.h.token);
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        let payload;
+        if (form) {
+            payload = body;
+        } else if (body) {
+            headers['Content-Type'] = 'application/json';
+            payload = JSON.stringify(body);
+        }
+        const resp = await fetch(`${apiBase()}${path}`, { method, headers, body: payload });
+        const text = await resp.text();
+        let json = null;
+        try { json = text ? JSON.parse(text) : null; } catch { json = { raw: text }; }
+        if (!resp.ok) {
+            const msg = (json && (json.message || json.title || json.detail)) || `HTTP ${resp.status}`;
+            const err = new Error(msg);
+            err.status = resp.status;
+            err.body = json;
+            throw err;
+        }
+        return json;
+    }
+
+    function roleLabel(r) { return r === 'c' ? 'client' : 'helper'; }
+
+    window.resetAll = () => {
+        for (const r of ['c', 'h']) {
+            if (state[r].connection) { try { state[r].connection.stop(); } catch {} }
+            state[r] = { token: null, userId: null, userName: null, connection: null, activeConversationId: null, joined: new Set(), messages: [] };
+            document.getElementById(`${r}_messages`).innerHTML = '';
+            const st = document.getElementById(`${r}_hubStatus`);
+            st.textContent = 'offline';
+            st.className = 'status-pill disconnected';
+        }
+        state.categoryId = state.gigId = state.proposalId = state.conversationId = state.messageId = null;
+        refreshStateUi();
+        log('state reset');
+    };
+
+    // STEP 1: REGISTER
+    window.registerUser = async (r) => {
+        const body = {
+            firstName: document.getElementById(`${r}_firstName`).value,
+            lastName: document.getElementById(`${r}_lastName`).value,
+            userName: document.getElementById(`${r}_userName`).value + '-' + stamp,
+            email: document.getElementById(`${r}_email`).value,
+            phoneNumber: document.getElementById(`${r}_phone`).value,
+            password: document.getElementById(`${r}_password`).value,
+            accountType: r === 'c' ? 0 : 1,
+            city: document.getElementById(`${r}_city`).value,
+        };
+        try {
+            const res = await api('/api/users/register', { method: 'POST', body });
+            const data = res?.data;
+            if (data?.userId) {
+                state[r].userId = data.userId;
+                refreshStateUi();
+                log(`registered ${roleLabel(r)} userId=${data.userId}`, 'ok');
+            } else {
+                log(`register ${roleLabel(r)}: ${res?.message || 'no userId'}`, 'err');
+            }
+        } catch (e) { log(`register ${roleLabel(r)} failed: ${e.message}`, 'err'); }
+    };
+
+    // STEP 2: OTP
+    window.sendOtp = async (r) => {
+        if (!state[r].userId) { log('register first', 'err'); return; }
+        try {
+            await api('/api/otp/send', { method: 'POST', body: {
+                userId: state[r].userId,
+                purpose: 1, // VerifyAccount
+                channel: 1, // Email
+                destination: document.getElementById(`${r}_email`).value,
+            }});
+            log(`OTP sent to ${roleLabel(r)}`, 'tx');
+        } catch (e) { log(`sendOtp ${roleLabel(r)}: ${e.message}`, 'err'); }
+    };
+    window.verifyOtp = async (r) => {
+        const code = document.getElementById(`${r}_otp`).value.trim();
+        if (!code) { log('enter OTP code', 'err'); return; }
+        try {
+            await api('/api/otp/verify', { method: 'POST', body: {
+                userId: state[r].userId,
+                purpose: 1,
+                channel: 1,
+                code,
+            }});
+            log(`OTP verified for ${roleLabel(r)}`, 'ok');
+        } catch (e) { log(`verifyOtp ${roleLabel(r)}: ${e.message}`, 'err'); }
+    };
+
+    // STEP 3: LOGIN
+    window.login = async (r) => {
+        try {
+            const res = await api('/api/users/login', { method: 'POST', body: {
+                email: document.getElementById(`${r}_email`).value,
+                password: document.getElementById(`${r}_password`).value,
+            }});
+            const data = res?.data;
+            if (!data?.accessToken) throw new Error('no accessToken');
+            state[r].token = data.accessToken;
+            state[r].userId = data.userId;
+            state[r].userName = data.userName;
+            refreshStateUi();
+            log(`logged in ${roleLabel(r)} as ${data.userName}`, 'ok');
+        } catch (e) { log(`login ${roleLabel(r)}: ${e.message}`, 'err'); }
+    };
+
+    // STEP 4: CATEGORIES + AI
+    window.listCategories = async () => {
+        try {
+            const res = await api('/api/categories');
+            const list = res?.data ?? res ?? [];
+            const sel = document.getElementById('categorySelect');
+            sel.innerHTML = '<option value="">— pick a category —</option>';
+            list.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = c.name || c.id;
+                sel.appendChild(opt);
+            });
+            if (list.length > 0) {
+                sel.value = list[0].id;
+                state.categoryId = list[0].id;
+                refreshStateUi();
+            }
+            sel.onchange = () => { state.categoryId = sel.value; refreshStateUi(); };
+            log(`categories loaded: ${list.length}`, 'ok');
+        } catch (e) { log(`listCategories: ${e.message}`, 'err'); }
+    };
+
+    window.suggestCategory = async () => {
+        try {
+            const title = encodeURIComponent(document.getElementById('aiTitle').value);
+            const desc = encodeURIComponent(document.getElementById('aiDescription').value);
+            const res = await api(`/api/gigs/suggest-category?title=${title}&description=${desc}&topK=3`);
+            log(`suggest: ${JSON.stringify(res?.data ?? res).slice(0, 120)}`, 'ok');
+        } catch (e) { log(`suggest: ${e.message}`, 'err'); }
+    };
+
+    window.estimate = async () => {
+        try {
+            const title = encodeURIComponent(document.getElementById('aiTitle').value);
+            const desc = encodeURIComponent(document.getElementById('aiDescription').value);
+            const cat = state.categoryId ? `&categoryId=${encodeURIComponent(state.categoryId)}` : '';
+            const res = await api(`/api/gigs/estimate?title=${title}&description=${desc}${cat}`);
+            log(`estimate: ${JSON.stringify(res?.data ?? res).slice(0, 200)}`, 'ok');
+        } catch (e) { log(`estimate: ${e.message}`, 'err'); }
+    };
+
+    // STEP 5: PUBLISH GIG
+    window.publishGig = async () => {
+        if (!state.c.token) { log('client login required', 'err'); return; }
+        const start = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+        const due = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+        try {
+            const res = await api('/api/gigs/publish', { role: 'c', method: 'POST', body: {
+                title: document.getElementById('aiTitle').value,
+                description: document.getElementById('aiDescription').value,
+                latitude: parseFloat(document.getElementById('gigLat').value),
+                longitude: parseFloat(document.getElementById('gigLng').value),
+                categoryId: state.categoryId,
+                numberOfTaskersNeeded: parseInt(document.getElementById('gigTaskers').value, 10),
+                mediaIds: [],
+                startDate: start,
+                dueDate: due,
+                budget: parseFloat(document.getElementById('gigBudget').value),
+            }});
+            const gigId = res?.data;
+            if (!gigId) throw new Error('no gigId returned');
+            state.gigId = gigId;
+            refreshStateUi();
+            log(`gig published id=${gigId}`, 'ok');
+        } catch (e) { log(`publishGig: ${e.message}`, 'err'); }
+    };
+
+    window.listGigs = async () => {
+        try {
+            const res = await api('/api/gigs?page=1&pageSize=10');
+            const items = res?.data?.items ?? res?.data ?? [];
+            log(`gigs: ${items.length}`, 'ok');
+        } catch (e) { log(`listGigs: ${e.message}`, 'err'); }
+    };
+
+    window.getGigDetails = async () => {
+        if (!state.gigId) { log('no gigId', 'err'); return; }
+        try {
+            const res = await api(`/api/gigs/${state.gigId}`);
+            log(`gig details loaded (${Object.keys(res?.data ?? {}).length} fields)`, 'ok');
+        } catch (e) { log(`getGigDetails: ${e.message}`, 'err'); }
+    };
+
+    // STEP 6: PROPOSALS
+    window.submitProposal = async () => {
+        if (!state.h.token) { log('helper login required', 'err'); return; }
+        if (!state.gigId) { log('publish a gig first', 'err'); return; }
+        try {
+            const res = await api(`/api/gigs/${state.gigId}/apply`, { role: 'h', method: 'POST', body: {
+                message: document.getElementById('proposalMessage').value,
+            }});
+            const data = res?.data;
+            const pid = data?.proposalId || data?.id || data;
+            state.proposalId = pid;
+            refreshStateUi();
+            log(`proposal submitted id=${pid}`, 'ok');
+        } catch (e) { log(`submitProposal: ${e.message}`, 'err'); }
+    };
+
+    window.myProposals = async () => {
+        if (!state.h.token) { log('helper login required', 'err'); return; }
+        try {
+            const res = await api('/api/gigs/proposals/mine', { role: 'h' });
+            const list = res?.data ?? [];
+            log(`helper proposals: ${list.length}`, 'ok');
+        } catch (e) { log(`myProposals: ${e.message}`, 'err'); }
+    };
+
+    window.listProposalsForGig = async () => {
+        if (!state.c.token || !state.gigId) { log('need client + gigId', 'err'); return; }
+        try {
+            const res = await api(`/api/gigs/${state.gigId}/proposals`, { role: 'c' });
+            const list = res?.data ?? [];
+            if (list.length && !state.proposalId) {
+                state.proposalId = list[0].id || list[0].proposalId;
+                refreshStateUi();
+            }
+            log(`proposals on gig: ${list.length}`, 'ok');
+        } catch (e) { log(`listProposalsForGig: ${e.message}`, 'err'); }
+    };
+
+    window.approveProposal = async () => {
+        if (!state.c.token || !state.proposalId) { log('need client + proposalId', 'err'); return; }
+        try {
+            const res = await api(`/api/gigs/requests/${state.proposalId}`, { role: 'c', method: 'PATCH', body: { decision: 1 } });
+            log(`proposal approved: ${res?.message || 'ok'}`, 'ok');
+        } catch (e) { log(`approveProposal: ${e.message}`, 'err'); }
+    };
+    window.rejectProposal = async () => {
+        if (!state.c.token || !state.proposalId) { log('need client + proposalId', 'err'); return; }
+        try {
+            const res = await api(`/api/gigs/requests/${state.proposalId}`, { role: 'c', method: 'PATCH', body: { decision: 2 } });
+            log(`proposal rejected: ${res?.message || 'ok'}`, 'ok');
+        } catch (e) { log(`rejectProposal: ${e.message}`, 'err'); }
+    };
+
+    // STEP 7: SIGNALR
+    window.connectHub = async (r) => {
+        if (!state[r].token) { log(`${roleLabel(r)}: login first`, 'err'); return; }
+        if (state[r].connection) { log(`${roleLabel(r)}: already connected`, 'err'); return; }
+        const url = `${apiBase()}${hubUrlInput.value}`;
+        const conn = new signalR.HubConnectionBuilder()
+            .withUrl(url, { accessTokenFactory: () => state[r].token })
+            .withAutomaticReconnect()
+            .build();
+        conn.on('messageReceived', (m) => { log(`[${r}] rx messageReceived id=${m.id}`, 'rx'); upsertMessage(r, m); });
+        conn.on('messageEdited', (m) => { log(`[${r}] rx messageEdited id=${m.id}`, 'rx'); upsertMessage(r, m); });
+        conn.on('messageDeleted', (p) => { log(`[${r}] rx messageDeleted id=${p.messageId}`, 'rx'); markDeleted(r, p.messageId); });
+        conn.on('conversationUpdated', (p) => { log(`[${r}] rx conversationUpdated conv=${p.conversationId}`, 'rx'); });
+        conn.on('conversationParticipantJoined', (p) => { log(`[${r}] rx participantJoined user=${p.userId}`, 'rx'); });
+        conn.on('conversationParticipantLeft', (p) => { log(`[${r}] rx participantLeft user=${p.userId} reason=${p.reason || ''}`, 'rx'); });
+        try {
+            await conn.start();
+            state[r].connection = conn;
+            const st = document.getElementById(`${r}_hubStatus`);
+            st.textContent = 'connected';
+            st.className = 'status-pill connected';
+            log(`${roleLabel(r)} hub connected`, 'ok');
+        } catch (e) { log(`${roleLabel(r)} hub connect failed: ${e.message}`, 'err'); }
+    };
+    window.disconnectHub = async (r) => {
+        if (!state[r].connection) return;
+        try { await state[r].connection.stop(); } catch {}
+        state[r].connection = null;
+        state[r].joined.clear();
+        const st = document.getElementById(`${r}_hubStatus`);
+        st.textContent = 'offline';
+        st.className = 'status-pill disconnected';
+        log(`${roleLabel(r)} hub disconnected`);
+    };
+    async function joinHubConvo(r, convoId) {
+        if (!state[r].connection || !convoId) return;
+        if (state[r].joined.has(convoId)) return;
+        try {
+            await state[r].connection.invoke('JoinConversation', convoId);
+            state[r].joined.add(convoId);
+        } catch (e) { log(`${roleLabel(r)} join failed: ${e.message}`, 'err'); }
+    }
+
+    // STEP 8: CHAT
+    window.listConvos = async (r) => {
+        if (!state[r].token) { log('login first', 'err'); return; }
+        try {
+            const res = await api('/api/chat/conversations', { role: r });
+            const list = res?.data ?? [];
+            log(`${roleLabel(r)} conversations: ${list.length}`, 'ok');
+            const gig = list.find(c => !c.isBot && c.gigId === state.gigId);
+            if (gig) { state[r].activeConversationId = gig.id; state.conversationId = gig.id; refreshStateUi(); }
+            return list;
+        } catch (e) { log(`listConvos ${roleLabel(r)}: ${e.message}`, 'err'); }
+    };
+
+    window.openGigConvo = async (r) => {
+        const list = await window.listConvos(r);
+        if (!list) return;
+        const gig = list.find(c => !c.isBot && c.gigId === state.gigId);
+        if (!gig) { log(`${roleLabel(r)}: no gig conversation yet`, 'err'); return; }
+        state[r].activeConversationId = gig.id;
+        state.conversationId = gig.id;
+        refreshStateUi();
+        await joinHubConvo(r, gig.id);
+        try {
+            const mres = await api(`/api/chat/conversations/${gig.id}/messages?page=1&pageSize=50`, { role: r });
+            state[r].messages = mres?.data ?? [];
+            renderMessages(r);
+            log(`${roleLabel(r)} opened gig convo, ${state[r].messages.length} msgs`, 'ok');
+        } catch (e) { log(`openGigConvo ${roleLabel(r)}: ${e.message}`, 'err'); }
+    };
+
+    function upsertMessage(r, m) {
+        if (m.conversationId !== state[r].activeConversationId) return;
+        const idx = state[r].messages.findIndex(x => x.id === m.id);
+        if (idx >= 0) state[r].messages[idx] = m;
+        else state[r].messages.push(m);
+        renderMessages(r);
+    }
+    function markDeleted(r, id) {
+        const msg = state[r].messages.find(x => x.id === id);
+        if (msg) { msg.isDeleted = true; msg.text = null; renderMessages(r); }
+    }
+    function renderMessages(r) {
+        const el = document.getElementById(`${r}_messages`);
+        el.innerHTML = '';
+        [...state[r].messages].sort((a, b) => new Date(a.sentOn) - new Date(b.sentOn)).forEach(m => {
+            const div = document.createElement('div');
+            const mine = m.senderId === state[r].userId;
+            div.className = `msg ${mine ? 'me' : 'them'}${m.isDeleted ? ' deleted' : ''}`;
+            if (m.isDeleted) {
+                div.textContent = '🗑 deleted';
+            } else if (m.type === 2 && m.imageUrl) {
+                const url = m.imageUrl.startsWith('http') ? m.imageUrl : `${apiBase()}${m.imageUrl}`;
+                div.innerHTML = `<img src="${url}" style="max-width:140px;border-radius:4px" />`;
+            } else if (m.type === 3) {
+                div.textContent = `📍 ${m.latitude}, ${m.longitude}`;
+            } else {
+                div.textContent = m.text || '';
+            }
+            el.appendChild(div);
+        });
+        el.scrollTop = el.scrollHeight;
+    }
+
+    window.sendText = async (r) => {
+        const text = document.getElementById(`${r}_chatText`).value.trim();
+        if (!text) return;
+        const convoId = state[r].activeConversationId;
+        if (!convoId) { log(`${roleLabel(r)}: open the gig chat first`, 'err'); return; }
+        try {
+            const res = await api('/api/chat/messages/text', { role: r, method: 'POST', body: { conversationId: convoId, text } });
+            const m = res?.data;
+            if (m) {
+                state[r].messages.push(m);
+                renderMessages(r);
+                state.lastSentId[r] = m.id;
+                state.messageId = m.id;
+                refreshStateUi();
+            }
+            log(`${roleLabel(r)} sent text id=${m?.id}`, 'tx');
+        } catch (e) { log(`${roleLabel(r)} sendText rejected: ${e.message}`, 'err'); }
+    };
+
+    // STEP 9: MODERATION + EDIT/DELETE
+    window.sendModerated = async (text) => {
+        const convoId = state.c.activeConversationId;
+        if (!convoId) { log('open client gig chat first', 'err'); return; }
+        try {
+            await api('/api/chat/messages/text', { role: 'c', method: 'POST', body: { conversationId: convoId, text } });
+            log(`WARN: moderation did NOT block "${text.slice(0, 30)}…"`, 'err');
+        } catch (e) { log(`moderation blocked ✓ "${text.slice(0, 30)}…" → ${e.message}`, 'ok'); }
+    };
+
+    window.editMessage = async () => {
+        const id = state.lastSentId.c || state.messageId;
+        if (!id) { log('no messageId', 'err'); return; }
+        try {
+            const res = await api(`/api/chat/messages/${id}`, { role: 'c', method: 'PATCH', body: { text: document.getElementById('c_editText').value } });
+            upsertMessage('c', res.data);
+            log(`edit message id=${id}`, 'tx');
+        } catch (e) { log(`editMessage: ${e.message}`, 'err'); }
+    };
+    window.deleteMessage = async () => {
+        const id = state.lastSentId.c || state.messageId;
+        if (!id) { log('no messageId', 'err'); return; }
+        try {
+            await api(`/api/chat/messages/${id}`, { role: 'c', method: 'DELETE' });
+            markDeleted('c', id);
+            log(`delete message id=${id}`, 'tx');
+        } catch (e) { log(`deleteMessage: ${e.message}`, 'err'); }
+    };
+    window.markRead = async (r) => {
+        const convoId = state[r].activeConversationId;
+        if (!convoId) { log('no active convo', 'err'); return; }
+        try {
+            const res = await api(`/api/chat/conversations/${convoId}/read`, { role: r, method: 'PATCH' });
+            log(`${roleLabel(r)} markRead count=${res?.data ?? '?'}`, 'tx');
+        } catch (e) { log(`markRead: ${e.message}`, 'err'); }
+    };
+
+    // STEP 10: IMAGE + LOCATION
+    window.sendImage = async () => {
+        const file = document.getElementById('c_imageFile').files[0];
+        if (!file) { log('pick a file', 'err'); return; }
+        const convoId = state.c.activeConversationId;
+        if (!convoId) { log('open gig chat first', 'err'); return; }
+        const fd = new FormData();
+        fd.append('conversationId', convoId);
+        fd.append('image', file);
+        try {
+            const res = await api('/api/chat/messages/image', { role: 'c', method: 'POST', body: fd, form: true });
+            upsertMessage('c', res.data);
+            log(`sent image id=${res?.data?.id}`, 'tx');
+        } catch (e) { log(`sendImage: ${e.message}`, 'err'); }
+    };
+    window.sendLocation = async () => {
+        const convoId = state.h.activeConversationId;
+        if (!convoId) { log('helper must open gig chat first', 'err'); return; }
+        try {
+            const res = await api('/api/chat/messages/location', { role: 'h', method: 'POST', body: {
+                conversationId: convoId,
+                latitude: parseFloat(document.getElementById('h_lat').value),
+                longitude: parseFloat(document.getElementById('h_lng').value),
+            }});
+            upsertMessage('h', res.data);
+            log(`sent location id=${res?.data?.id}`, 'tx');
+        } catch (e) { log(`sendLocation: ${e.message}`, 'err'); }
+    };
+
+    // STEP 11: BOT
+    window.askBot = async () => {
+        if (!state.c.token) { log('client login required', 'err'); return; }
+        try {
+            const res = await api('/api/chat/bot/ask', { role: 'c', method: 'POST', body: { text: document.getElementById('botQuestion').value } });
+            const data = res?.data;
+            log(`bot reply (intent=${data?.intent}, conf=${data?.confidence}): ${String(data?.reply || '').slice(0, 80)}`, 'ok');
+        } catch (e) { log(`askBot: ${e.message}`, 'err'); }
+    };
+
+    // STEP 12: REMOVE HELPER
+    window.removeHelper = async () => {
+        if (!state.c.token || !state.gigId || !state.h.userId) { log('need client + gigId + helperId', 'err'); return; }
+        try {
+            const reason = document.getElementById('removeReason').value;
+            const res = await api(`/api/gigs/${state.gigId}/helpers/${state.h.userId}`, { role: 'c', method: 'DELETE', body: { reason } });
+            log(`helper removed: ${res?.message || 'ok'}`, 'ok');
+        } catch (e) { log(`removeHelper: ${e.message}`, 'err'); }
+    };
+
+    // STEP 13: COMPLETE / VERIFY / DELETE
+    window.completeGig = async () => {
+        if (!state.c.token || !state.gigId) { log('need client + gigId', 'err'); return; }
+        try {
+            const res = await api(`/api/gigs/${state.gigId}/complete`, { role: 'c', method: 'POST' });
+            log(`gig completed: ${res?.message || 'ok'}`, 'ok');
+        } catch (e) { log(`completeGig: ${e.message}`, 'err'); }
+    };
+    window.verifyGig = async () => {
+        if (!state.c.token || !state.gigId) { log('need client + gigId', 'err'); return; }
+        try {
+            const res = await api(`/api/gigs/${state.gigId}/verify`, { role: 'c', method: 'POST' });
+            log(`gig verified: ${res?.message || 'ok'}`, 'ok');
+        } catch (e) { log(`verifyGig: ${e.message}`, 'err'); }
+    };
+    window.deleteGig = async () => {
+        if (!state.c.token || !state.gigId) { log('need client + gigId', 'err'); return; }
+        if (!confirm('Delete the gig?')) return;
+        try {
+            const res = await api(`/api/gigs/${state.gigId}`, { role: 'c', method: 'DELETE' });
+            log(`gig deleted: ${res?.message || 'ok'}`, 'ok');
+        } catch (e) { log(`deleteGig: ${e.message}`, 'err'); }
+    };
+
+    refreshStateUi();
+    log('ready — open steps 1 → 13 in order', 'ok');
+})();
+</script>
+</body>
+</html>
