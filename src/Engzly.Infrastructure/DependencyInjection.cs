@@ -119,6 +119,8 @@ public static class DependencyInjection
             client.Timeout = opts.Timeout;
         });
 
+        services.AddHostedService<PaymentReconciliationHostedService>();
+
         services.AddLogging(configuration, environment);
 
         return services;
