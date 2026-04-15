@@ -1,9 +1,12 @@
 using Engzly.Application.Common.Bases;
+using Engzly.Application.Features.Chat.Common;
 using Engzly.Application.Features.Chat.Responses;
 using Engzly.Application.Interfaces.Authentication;
 using Engzly.Application.Interfaces.Repositories;
 using Engzly.Domain.Entities.Chat;
+using Engzly.Domain.Entities.Gigs;
 using Engzly.Domain.Entities.Identity;
+using Engzly.Domain.Enums;
 using Engzly.Domain.Specifications;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -15,7 +18,9 @@ namespace Engzly.Application.Features.Chat.Queries
 
     public sealed class GetMyConversationsQueryHandler(
         IGenericRepository<Conversation, string> _conversations,
+        IGenericRepository<ConversationParticipant, string> _participants,
         IGenericRepository<ChatMessage, string> _messages,
+        IGenericRepository<Gig, string> _gigs,
         UserManager<User> _userManager,
         ICurrentUserService _currentUser)
         : ResponseHandler, IRequestHandler<GetMyConversationsQuery, Response<List<ConversationSummaryResponse>>>
@@ -28,31 +33,48 @@ namespace Engzly.Application.Features.Chat.Queries
             if (caller is null || string.IsNullOrWhiteSpace(caller.Id))
                 return Unauthorized<List<ConversationSummaryResponse>>();
 
-            var myConversations = await _conversations.GetAllAsync(
-                new UserConversationsSpec(caller.Id),
+            var result = new List<ConversationSummaryResponse>();
+
+            var myParticipations = await _participants.GetAllAsync(
+                new UserActiveParticipationsSpec(caller.Id),
                 cancellationToken);
 
-            var ordered = myConversations
-                .OrderByDescending(c => c.LastMessageOn)
-                .ToList();
+            var conversationIds = myParticipations.Select(p => p.ConversationId).Distinct().ToList();
 
-            var result = new List<ConversationSummaryResponse>(ordered.Count);
-
-            foreach (var conversation in ordered)
+            foreach (var convId in conversationIds)
             {
-                var otherId = conversation.UserAId == caller.Id
-                    ? conversation.UserBId
-                    : conversation.UserAId;
+                var conversation = await _conversations.GetByIdAsync(convId, cancellationToken);
+                if (conversation is null || conversation.IsBot)
+                    continue;
 
-                var otherUser = await _userManager.FindByIdAsync(otherId);
-                var otherName = otherUser?.UserName ?? "Unknown";
+                var participants = await _participants.GetAllAsync(
+                    new ConversationParticipantsSpec(conversation.Id, activeOnly: false),
+                    cancellationToken);
+
+                var participantItems = new List<ConversationParticipantItem>(participants.Count);
+                foreach (var p in participants)
+                {
+                    var u = await _userManager.FindByIdAsync(p.UserId);
+                    participantItems.Add(new ConversationParticipantItem(
+                        p.UserId,
+                        u?.UserName ?? "Unknown",
+                        p.Role,
+                        p.JoinedOn,
+                        p.LeftOn,
+                        p.LeaveReason));
+                }
+
+                string? gigTitle = null;
+                if (!string.IsNullOrWhiteSpace(conversation.GigId))
+                {
+                    var gig = await _gigs.GetByIdAsync(conversation.GigId!, cancellationToken);
+                    gigTitle = gig?.Title;
+                }
 
                 var lastMessages = await _messages.GetAllAsync(
                     new LatestMessageSpec(conversation.Id),
                     cancellationToken);
-                var last = lastMessages
-                    .OrderByDescending(m => m.SentOn)
-                    .FirstOrDefault();
+                var last = lastMessages.OrderByDescending(m => m.SentOn).FirstOrDefault();
 
                 var unread = await _messages.CountAsync(
                     new UnreadForUserSpec(conversation.Id, caller.Id),
@@ -66,23 +88,53 @@ namespace Engzly.Application.Features.Chat.Queries
 
                 result.Add(new ConversationSummaryResponse(
                     conversation.Id,
-                    otherId,
-                    otherName,
+                    IsBot: false,
                     conversation.GigId,
-                    conversation.IsBot,
+                    gigTitle,
+                    Title: gigTitle ?? "Gig Chat",
+                    participantItems,
                     conversation.LastMessageOn,
                     lastText,
                     last?.Type,
                     unread));
             }
 
-            return Success(result);
+            var bot = (await _conversations.GetAllAsync(
+                new BotConversationForUserSpec(caller.Id),
+                cancellationToken)).FirstOrDefault();
+
+            if (bot is not null)
+            {
+                var lastBotMessages = await _messages.GetAllAsync(
+                    new LatestMessageSpec(bot.Id),
+                    cancellationToken);
+                var lastBot = lastBotMessages.OrderByDescending(m => m.SentOn).FirstOrDefault();
+
+                var unreadBot = await _messages.CountAsync(
+                    new UnreadForUserSpec(bot.Id, caller.Id),
+                    cancellationToken);
+
+                result.Add(new ConversationSummaryResponse(
+                    bot.Id,
+                    IsBot: true,
+                    GigId: null,
+                    GigTitle: null,
+                    Title: "Engzly Assistant",
+                    Participants: new List<ConversationParticipantItem>(),
+                    bot.LastMessageOn,
+                    lastBot?.Text,
+                    lastBot?.Type,
+                    unreadBot));
+            }
+
+            var ordered = result.OrderByDescending(c => c.LastMessageOn).ToList();
+            return Success(ordered);
         }
 
-        private sealed class UserConversationsSpec : BaseSpecification<Conversation>
+        private sealed class BotConversationForUserSpec : BaseSpecification<Conversation>
         {
-            public UserConversationsSpec(string userId)
-                : base(c => c.UserAId == userId || c.UserBId == userId)
+            public BotConversationForUserSpec(string userId)
+                : base(c => c.IsBot && c.OwnerId == userId)
             { }
         }
 

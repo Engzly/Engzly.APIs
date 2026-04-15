@@ -166,6 +166,19 @@ namespace Engzly.API.Controllers
             var result = await _mediator.Send((_req));
             return Resolve(result);
         }
+
+        [Authorize]
+        [HttpDelete("{gigId}/helpers/{helperId}")]
+        public async Task<IActionResult> RemoveHelper(
+            [FromRoute] string gigId,
+            [FromRoute] string helperId,
+            [FromBody] RemoveHelperBody body)
+        {
+            var result = await _mediator.Send(new RemoveHelperFromGigCommand(gigId, helperId, body.Reason));
+            return Resolve(result);
+        }
+
+        public sealed record RemoveHelperBody(string Reason);
     }
 }
 

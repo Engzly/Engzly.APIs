@@ -1,5 +1,7 @@
 ﻿using System.Reflection;
 using Engzly.Application.Common.Behaviors;
+using Engzly.Application.Common.Moderation;
+using Engzly.Application.Interfaces.Moderation;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +18,8 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(MessageModerationBehavior<,>));
+        services.AddSingleton<IContentPolicy, RegexContentPolicy>();
         services.AddHttpContextAccessor();
         return services;
     }

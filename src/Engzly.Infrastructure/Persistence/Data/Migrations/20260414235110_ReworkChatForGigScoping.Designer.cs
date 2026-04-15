@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Engzly.Infrastructure.Persistence.Data.Migrations
 {
     [DbContext(typeof(EngzlyDbContext))]
-    [Migration("20260414225523_AddChatMessageEditDelete")]
-    partial class AddChatMessageEditDelete
+    [Migration("20260414235110_ReworkChatForGigScoping")]
+    partial class ReworkChatForGigScoping
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -96,30 +96,64 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("IsBot")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<DateTime>("LastMessageOn")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("UserAId")
+                    b.Property<string>("OwnerId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GigId");
+
+                    b.HasIndex("LastMessageOn");
+
+                    b.HasIndex("OwnerId");
+
+                    b.ToTable("Conversations", (string)null);
+                });
+
+            modelBuilder.Entity("Engzly.Domain.Entities.Chat.ConversationParticipant", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ConversationId")
                         .IsRequired()
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("UserBId")
+                    b.Property<DateTime>("JoinedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LeaveReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("LeftOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
                         .IsRequired()
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LastMessageOn");
+                    b.HasIndex("UserId");
 
-                    b.HasIndex("UserBId");
+                    b.HasIndex("ConversationId", "UserId");
 
-                    b.HasIndex("UserAId", "UserBId", "GigId");
-
-                    b.ToTable("Conversations", (string)null);
+                    b.ToTable("ConversationParticipants", (string)null);
                 });
 
             modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Category", b =>
@@ -714,23 +748,15 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
                     b.Navigation("Conversation");
                 });
 
-            modelBuilder.Entity("Engzly.Domain.Entities.Chat.Conversation", b =>
+            modelBuilder.Entity("Engzly.Domain.Entities.Chat.ConversationParticipant", b =>
                 {
-                    b.HasOne("Engzly.Domain.Entities.Identity.User", "UserA")
-                        .WithMany()
-                        .HasForeignKey("UserAId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.HasOne("Engzly.Domain.Entities.Chat.Conversation", "Conversation")
+                        .WithMany("Participants")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Engzly.Domain.Entities.Identity.User", "UserB")
-                        .WithMany()
-                        .HasForeignKey("UserBId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("UserA");
-
-                    b.Navigation("UserB");
+                    b.Navigation("Conversation");
                 });
 
             modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Gig", b =>
@@ -953,6 +979,8 @@ namespace Engzly.Infrastructure.Persistence.Data.Migrations
             modelBuilder.Entity("Engzly.Domain.Entities.Chat.Conversation", b =>
                 {
                     b.Navigation("Messages");
+
+                    b.Navigation("Participants");
                 });
 
             modelBuilder.Entity("Engzly.Domain.Entities.Gigs.Gig", b =>

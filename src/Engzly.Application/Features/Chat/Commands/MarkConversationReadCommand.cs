@@ -1,4 +1,5 @@
 using Engzly.Application.Common.Bases;
+using Engzly.Application.Features.Chat.Common;
 using Engzly.Application.Interfaces.Authentication;
 using Engzly.Application.Interfaces.Repositories;
 using Engzly.Domain.Entities.Chat;
@@ -12,6 +13,7 @@ namespace Engzly.Application.Features.Chat.Commands
 
     public sealed class MarkConversationReadCommandHandler(
         IGenericRepository<Conversation, string> _conversations,
+        IGenericRepository<ConversationParticipant, string> _participants,
         IGenericRepository<ChatMessage, string> _messages,
         ICurrentUserService _currentUser)
         : ResponseHandler, IRequestHandler<MarkConversationReadCommand, Response<int>>
@@ -28,8 +30,20 @@ namespace Engzly.Application.Features.Chat.Commands
             if (conversation is null)
                 return NotFound<int>("Conversation not found");
 
-            if (conversation.UserAId != caller.Id && conversation.UserBId != caller.Id)
-                return Forbidden<int>("Not a participant in this conversation");
+            if (conversation.IsBot)
+            {
+                if (conversation.OwnerId != caller.Id)
+                    return Forbidden<int>("Not your bot conversation");
+            }
+            else
+            {
+                var myParticipation = await _participants.GetAllAsync(
+                    new UserParticipationSpec(conversation.Id, caller.Id),
+                    cancellationToken);
+
+                if (!myParticipation.Any(p => p.LeftOn == null))
+                    return Forbidden<int>("You are not an active participant in this conversation");
+            }
 
             var unread = await _messages.GetAllAsync(
                 new UnreadIncomingMessagesSpec(conversation.Id, caller.Id),

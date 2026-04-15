@@ -1,4 +1,5 @@
 using Engzly.Application.Common.Bases;
+using Engzly.Application.Features.Chat.Common;
 using Engzly.Application.Features.Chat.Responses;
 using Engzly.Application.Interfaces;
 using Engzly.Application.Interfaces.Authentication;
@@ -16,6 +17,7 @@ namespace Engzly.Application.Features.Chat.Commands
 
     public sealed class SendImageMessageCommandHandler(
         IGenericRepository<Conversation, string> _conversations,
+        IGenericRepository<ConversationParticipant, string> _participants,
         IGenericRepository<ChatMessage, string> _messages,
         ICurrentUserService _currentUser,
         IFileService _files,
@@ -47,11 +49,15 @@ namespace Engzly.Application.Features.Chat.Commands
             if (conversation is null)
                 return NotFound<ChatMessageResponse>("Conversation not found");
 
-            if (conversation.UserAId != caller.Id && conversation.UserBId != caller.Id)
-                return Forbidden<ChatMessageResponse>("Not a participant in this conversation");
-
             if (conversation.IsBot)
                 return BadRequest<ChatMessageResponse>("Images cannot be sent to the chatbot");
+
+            var activeParticipants = await _participants.GetAllAsync(
+                new ConversationParticipantsSpec(conversation.Id, activeOnly: true),
+                cancellationToken);
+
+            if (!activeParticipants.Any(p => p.UserId == caller.Id))
+                return Forbidden<ChatMessageResponse>("You are not an active participant in this conversation");
 
             var imageUrl = await _files.UploadFileAsync(request.Image, "chat");
 
@@ -86,8 +92,11 @@ namespace Engzly.Application.Features.Chat.Commands
                 message.EditedOn,
                 message.IsDeleted);
 
-            var recipientId = conversation.UserAId == caller.Id ? conversation.UserBId : conversation.UserAId;
-            await _notifier.NotifyMessageAsync(conversation.Id, recipientId, response, cancellationToken);
+            await _notifier.NotifyMessageAsync(
+                conversation.Id,
+                activeParticipants.Select(p => p.UserId),
+                response,
+                cancellationToken);
 
             return Created(response);
         }

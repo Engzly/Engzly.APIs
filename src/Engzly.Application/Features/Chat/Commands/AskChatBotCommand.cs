@@ -1,4 +1,5 @@
 using Engzly.Application.Common.Bases;
+using Engzly.Application.Features.Chat.Common;
 using Engzly.Application.Features.Chat.Responses;
 using Engzly.Application.Interfaces.AI;
 using Engzly.Application.Interfaces.Authentication;
@@ -11,7 +12,7 @@ using MediatR;
 namespace Engzly.Application.Features.Chat.Commands
 {
     public sealed record AskChatBotCommand(string Text)
-        : IRequest<Response<ChatBotReplyResponse>>;
+        : IRequest<Response<ChatBotReplyResponse>>, IModeratedTextCommand;
 
     public sealed class AskChatBotCommandHandler(
         IGenericRepository<Conversation, string> _conversations,
@@ -44,8 +45,7 @@ namespace Engzly.Application.Features.Chat.Commands
                 conversation = new Conversation
                 {
                     Id = Guid.NewGuid().ToString(),
-                    UserAId = caller.Id,
-                    UserBId = BotUserId,
+                    OwnerId = caller.Id,
                     GigId = null,
                     IsBot = true,
                     CreatedOn = DateTime.UtcNow,
@@ -145,7 +145,7 @@ namespace Engzly.Application.Features.Chat.Commands
         private sealed class BotConversationSpec : BaseSpecification<Conversation>
         {
             public BotConversationSpec(string userId)
-                : base(c => c.IsBot && c.UserAId == userId)
+                : base(c => c.IsBot && c.OwnerId == userId)
             { }
         }
 

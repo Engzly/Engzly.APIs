@@ -1,4 +1,5 @@
 using Engzly.Application.Common.Bases;
+using Engzly.Application.Features.Chat.Common;
 using Engzly.Application.Features.Chat.Responses;
 using Engzly.Application.Interfaces;
 using Engzly.Application.Interfaces.Authentication;
@@ -10,11 +11,12 @@ using MediatR;
 namespace Engzly.Application.Features.Chat.Commands
 {
     public sealed record EditMessageCommand(string MessageId, string Text)
-        : IRequest<Response<ChatMessageResponse>>;
+        : IRequest<Response<ChatMessageResponse>>, IModeratedTextCommand;
 
     public sealed class EditMessageCommandHandler(
         IGenericRepository<ChatMessage, string> _messages,
         IGenericRepository<Conversation, string> _conversations,
+        IGenericRepository<ConversationParticipant, string> _participants,
         ICurrentUserService _currentUser,
         IChatNotifier _notifier)
         : ResponseHandler, IRequestHandler<EditMessageCommand, Response<ChatMessageResponse>>
@@ -53,6 +55,13 @@ namespace Engzly.Application.Features.Chat.Commands
             if (conversation.IsBot)
                 return BadRequest<ChatMessageResponse>("Bot conversation messages cannot be edited");
 
+            var activeParticipants = await _participants.GetAllAsync(
+                new ConversationParticipantsSpec(conversation.Id, activeOnly: true),
+                cancellationToken);
+
+            if (!activeParticipants.Any(p => p.UserId == caller.Id))
+                return Forbidden<ChatMessageResponse>("You are not an active participant in this conversation");
+
             message.Text = request.Text;
             message.EditedOn = DateTime.UtcNow;
             _messages.Update(message);
@@ -72,8 +81,11 @@ namespace Engzly.Application.Features.Chat.Commands
                 message.EditedOn,
                 message.IsDeleted);
 
-            var recipientId = conversation.UserAId == caller.Id ? conversation.UserBId : conversation.UserAId;
-            await _notifier.NotifyMessageEditedAsync(conversation.Id, recipientId, response, cancellationToken);
+            await _notifier.NotifyMessageEditedAsync(
+                conversation.Id,
+                activeParticipants.Select(p => p.UserId),
+                response,
+                cancellationToken);
 
             return Success(response, "Message edited");
         }

@@ -14,10 +14,6 @@ namespace Engzly.API.Controllers
         public async Task<IActionResult> GetMyConversations()
             => Resolve(await _mediator.Send(new GetMyConversationsQuery()));
 
-        [HttpPost("conversations")]
-        public async Task<IActionResult> StartConversation([FromBody] StartConversationCommand command)
-            => Resolve(await _mediator.Send(command));
-
         [HttpGet("conversations/{conversationId}/messages")]
         public async Task<IActionResult> GetMessages(
             [FromRoute] string conversationId,

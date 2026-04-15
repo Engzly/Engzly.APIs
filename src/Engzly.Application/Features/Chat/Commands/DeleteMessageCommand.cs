@@ -1,4 +1,5 @@
 using Engzly.Application.Common.Bases;
+using Engzly.Application.Features.Chat.Common;
 using Engzly.Application.Interfaces;
 using Engzly.Application.Interfaces.Authentication;
 using Engzly.Application.Interfaces.Repositories;
@@ -13,6 +14,7 @@ namespace Engzly.Application.Features.Chat.Commands
     public sealed class DeleteMessageCommandHandler(
         IGenericRepository<ChatMessage, string> _messages,
         IGenericRepository<Conversation, string> _conversations,
+        IGenericRepository<ConversationParticipant, string> _participants,
         ICurrentUserService _currentUser,
         IChatNotifier _notifier)
         : ResponseHandler, IRequestHandler<DeleteMessageCommand, Response<string>>
@@ -42,6 +44,10 @@ namespace Engzly.Application.Features.Chat.Commands
             if (conversation.IsBot)
                 return BadRequest<string>("Bot conversation messages cannot be deleted");
 
+            var activeParticipants = await _participants.GetAllAsync(
+                new ConversationParticipantsSpec(conversation.Id, activeOnly: true),
+                cancellationToken);
+
             message.IsDeleted = true;
             message.DeletedOn = DateTime.UtcNow;
             message.Text = null;
@@ -51,8 +57,11 @@ namespace Engzly.Application.Features.Chat.Commands
             _messages.Update(message);
             await _messages.CompleteAsync(cancellationToken);
 
-            var recipientId = conversation.UserAId == caller.Id ? conversation.UserBId : conversation.UserAId;
-            await _notifier.NotifyMessageDeletedAsync(conversation.Id, recipientId, message.Id, cancellationToken);
+            await _notifier.NotifyMessageDeletedAsync(
+                conversation.Id,
+                activeParticipants.Select(p => p.UserId),
+                message.Id,
+                cancellationToken);
 
             return Success(message.Id, "Message deleted");
         }

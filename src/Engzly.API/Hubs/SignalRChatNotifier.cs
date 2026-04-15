@@ -8,64 +8,112 @@ namespace Engzly.API.Hubs
     {
         public async Task NotifyMessageAsync(
             string conversationId,
-            string recipientId,
+            IEnumerable<string> participantUserIds,
             ChatMessageResponse message,
             CancellationToken cancellationToken = default)
         {
             var conversationGroup = ChatHub.ConversationGroup(conversationId);
-            var userGroup = ChatHub.UserGroup(recipientId);
 
             await _hub.Clients.Group(conversationGroup)
                 .SendAsync("messageReceived", message, cancellationToken);
 
-            await _hub.Clients.Group(userGroup)
-                .SendAsync("conversationUpdated", new
-                {
-                    conversationId,
-                    lastMessageOn = message.SentOn,
-                    lastMessageType = message.Type,
-                    lastMessageText = message.Text
-                }, cancellationToken);
+            var summary = new
+            {
+                conversationId,
+                lastMessageOn = message.SentOn,
+                lastMessageType = message.Type,
+                lastMessageText = message.Text
+            };
+
+            foreach (var userId in participantUserIds.Distinct())
+            {
+                await _hub.Clients.Group(ChatHub.UserGroup(userId))
+                    .SendAsync("conversationUpdated", summary, cancellationToken);
+            }
         }
 
         public async Task NotifyMessageEditedAsync(
             string conversationId,
-            string recipientId,
+            IEnumerable<string> participantUserIds,
             ChatMessageResponse message,
             CancellationToken cancellationToken = default)
         {
             var conversationGroup = ChatHub.ConversationGroup(conversationId);
-            var userGroup = ChatHub.UserGroup(recipientId);
 
             await _hub.Clients.Group(conversationGroup)
                 .SendAsync("messageEdited", message, cancellationToken);
 
-            await _hub.Clients.Group(userGroup)
-                .SendAsync("conversationMessageEdited", new
-                {
-                    conversationId,
-                    messageId = message.Id,
-                    text = message.Text,
-                    editedOn = message.EditedOn
-                }, cancellationToken);
+            var payload = new
+            {
+                conversationId,
+                messageId = message.Id,
+                text = message.Text,
+                editedOn = message.EditedOn
+            };
+
+            foreach (var userId in participantUserIds.Distinct())
+            {
+                await _hub.Clients.Group(ChatHub.UserGroup(userId))
+                    .SendAsync("conversationMessageEdited", payload, cancellationToken);
+            }
         }
 
         public async Task NotifyMessageDeletedAsync(
             string conversationId,
-            string recipientId,
+            IEnumerable<string> participantUserIds,
             string messageId,
             CancellationToken cancellationToken = default)
         {
             var conversationGroup = ChatHub.ConversationGroup(conversationId);
-            var userGroup = ChatHub.UserGroup(recipientId);
-
             var payload = new { conversationId, messageId };
 
             await _hub.Clients.Group(conversationGroup)
                 .SendAsync("messageDeleted", payload, cancellationToken);
 
-            await _hub.Clients.Group(userGroup)
-                .SendAsync("conversationMessageDeleted", payload, cancellationToken);
+            foreach (var userId in participantUserIds.Distinct())
+            {
+                await _hub.Clients.Group(ChatHub.UserGroup(userId))
+                    .SendAsync("conversationMessageDeleted", payload, cancellationToken);
+            }
+        }
+
+        public async Task NotifyParticipantJoinedAsync(
+            string conversationId,
+            IEnumerable<string> participantUserIds,
+            ConversationParticipantItem participant,
+            CancellationToken cancellationToken = default)
+        {
+            var conversationGroup = ChatHub.ConversationGroup(conversationId);
+            var payload = new { conversationId, participant };
+
+            await _hub.Clients.Group(conversationGroup)
+                .SendAsync("participantJoined", payload, cancellationToken);
+
+            foreach (var userId in participantUserIds.Distinct())
+            {
+                await _hub.Clients.Group(ChatHub.UserGroup(userId))
+                    .SendAsync("conversationParticipantJoined", payload, cancellationToken);
+            }
+        }
+
+        public async Task NotifyParticipantLeftAsync(
+            string conversationId,
+            IEnumerable<string> participantUserIds,
+            string userId,
+            string? reason,
+            CancellationToken cancellationToken = default)
+        {
+            var conversationGroup = ChatHub.ConversationGroup(conversationId);
+            var payload = new { conversationId, userId, reason };
+
+            await _hub.Clients.Group(conversationGroup)
+                .SendAsync("participantLeft", payload, cancellationToken);
+
+            foreach (var uid in participantUserIds.Distinct())
+            {
+                await _hub.Clients.Group(ChatHub.UserGroup(uid))
+                    .SendAsync("conversationParticipantLeft", payload, cancellationToken);
+            }
         }
     }
 }

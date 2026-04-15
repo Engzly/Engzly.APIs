@@ -16,12 +16,21 @@ namespace Engzly.Application.Features.Chat.Responses
         DateTime? EditedOn,
         bool IsDeleted);
 
+    public sealed record ConversationParticipantItem(
+        string UserId,
+        string UserName,
+        ConversationParticipantRole Role,
+        DateTime JoinedOn,
+        DateTime? LeftOn,
+        string? LeaveReason);
+
     public sealed record ConversationSummaryResponse(
         string Id,
-        string OtherUserId,
-        string OtherUserName,
-        string? GigId,
         bool IsBot,
+        string? GigId,
+        string? GigTitle,
+        string Title,
+        List<ConversationParticipantItem> Participants,
         DateTime LastMessageOn,
         string? LastMessageText,
         ChatMessageType? LastMessageType,

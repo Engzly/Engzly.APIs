@@ -5,8 +5,10 @@ using Engzly.Application.Interfaces.Notifications;
 using Engzly.Application.Interfaces.Repositories;
 using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
 using Engzly.Domain.Entities.Identity;
+using Engzly.Application.Interfaces.Moderation;
 using Engzly.Infrastructure.AI;
 using Engzly.Infrastructure.Authentication;
+using Engzly.Infrastructure.Moderation;
 using Engzly.Infrastructure.Authorization.OtpSecurity;
 using Engzly.Infrastructure.Authorization.OtpSecurity.Notification;
 using Engzly.Infrastructure.Blobs;
@@ -96,6 +98,13 @@ public static class DependencyInjection
         });
 
         services.AddHttpClient<IChatBot, HttpChatBot>((sp, client) =>
+        {
+            var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Engzly.Application.Interfaces.AI.CategoryAIOptions>>().Value;
+            client.BaseAddress = new Uri(opts.BaseUrl);
+            client.Timeout = opts.Timeout;
+        });
+
+        services.AddHttpClient<IProfanityFilter, HttpProfanityFilter>((sp, client) =>
         {
             var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Engzly.Application.Interfaces.AI.CategoryAIOptions>>().Value;
             client.BaseAddress = new Uri(opts.BaseUrl);

@@ -1,4 +1,5 @@
 using Engzly.Application.Common.Bases;
+using Engzly.Application.Features.Chat.Common;
 using Engzly.Application.Features.Chat.Responses;
 using Engzly.Application.Interfaces.Authentication;
 using Engzly.Application.Interfaces.Repositories;
@@ -16,6 +17,7 @@ namespace Engzly.Application.Features.Chat.Queries
 
     public sealed class GetConversationMessagesQueryHandler(
         IGenericRepository<Conversation, string> _conversations,
+        IGenericRepository<ConversationParticipant, string> _participants,
         IGenericRepository<ChatMessage, string> _messages,
         ICurrentUserService _currentUser)
         : ResponseHandler, IRequestHandler<GetConversationMessagesQuery, Response<List<ChatMessageResponse>>>
@@ -32,8 +34,20 @@ namespace Engzly.Application.Features.Chat.Queries
             if (conversation is null)
                 return NotFound<List<ChatMessageResponse>>("Conversation not found");
 
-            if (conversation.UserAId != caller.Id && conversation.UserBId != caller.Id)
-                return Forbidden<List<ChatMessageResponse>>("Not a participant in this conversation");
+            if (conversation.IsBot)
+            {
+                if (conversation.OwnerId != caller.Id)
+                    return Forbidden<List<ChatMessageResponse>>("Not your bot conversation");
+            }
+            else
+            {
+                var participation = await _participants.GetAllAsync(
+                    new UserParticipationSpec(conversation.Id, caller.Id),
+                    cancellationToken);
+
+                if (participation.Count == 0)
+                    return Forbidden<List<ChatMessageResponse>>("You are not a participant in this conversation");
+            }
 
             var page = request.Page < 1 ? 1 : request.Page;
             var size = request.PageSize < 1 ? 50 : Math.Min(request.PageSize, 200);

@@ -13,28 +13,24 @@ namespace Engzly.Infrastructure.Persistence.Data.Configurations.Chat
 
             builder.ToTable("Conversations");
 
-            builder.Property(c => c.UserAId).IsRequired().HasMaxLength(450);
-            builder.Property(c => c.UserBId).IsRequired().HasMaxLength(450);
             builder.Property(c => c.GigId).HasMaxLength(450);
+            builder.Property(c => c.OwnerId).HasMaxLength(450);
+            builder.Property(c => c.IsBot).HasDefaultValue(false);
             builder.Property(c => c.CreatedOn).IsRequired();
             builder.Property(c => c.LastMessageOn).IsRequired();
 
-            builder.HasOne(c => c.UserA)
-                .WithMany()
-                .HasForeignKey(c => c.UserAId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasOne(c => c.UserB)
-                .WithMany()
-                .HasForeignKey(c => c.UserBId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.HasMany(c => c.Participants)
+                .WithOne(p => p.Conversation)
+                .HasForeignKey(p => p.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(c => c.Messages)
                 .WithOne(m => m.Conversation)
                 .HasForeignKey(m => m.ConversationId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(c => new { c.UserAId, c.UserBId, c.GigId });
+            builder.HasIndex(c => c.GigId);
+            builder.HasIndex(c => c.OwnerId);
             builder.HasIndex(c => c.LastMessageOn);
         }
     }

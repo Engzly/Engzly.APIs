@@ -1,4 +1,5 @@
 ﻿using Engzly.Application.Interfaces.Repositories;
+using Engzly.Domain.Entities.Chat;
 using Engzly.Domain.Entities.Gigs;
 using Engzly.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -13,6 +14,8 @@ namespace Engzly.Infrastructure.Persistence.Repositories
         private IGenericRepository<Proposal, string>? _proposals;
         private IGenericRepository<Gig, string>? _gigs;
         private IGenericRepository<GigAssignment, string>? _gigAssignments;
+        private IGenericRepository<Conversation, string>? _conversations;
+        private IGenericRepository<ConversationParticipant, string>? _conversationParticipants;
         public UnitOfWork(EngzlyDbContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -25,6 +28,12 @@ namespace Engzly.Infrastructure.Persistence.Repositories
             => _gigs ??= new GenericRepository<Gig, string>(_context);
 
         public IGenericRepository<GigAssignment, string> GigAssignments => _gigAssignments ??= new GenericRepository<GigAssignment, string>(_context);
+
+        public IGenericRepository<Conversation, string> Conversations
+            => _conversations ??= new GenericRepository<Conversation, string>(_context);
+
+        public IGenericRepository<ConversationParticipant, string> ConversationParticipants
+            => _conversationParticipants ??= new GenericRepository<ConversationParticipant, string>(_context);
 
         public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
         {

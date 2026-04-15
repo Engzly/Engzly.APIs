@@ -21,6 +21,7 @@ namespace Engzly.Infrastructure.Persistence.Data
         public DbSet<IdentityVerification> IdentityVerifications { get; private set; }
         public DbSet<VerificationAccessLog> VerificationAccessLogs { get; private set; }
         public DbSet<Conversation> Conversations { get; private set; }
+        public DbSet<ConversationParticipant> ConversationParticipants { get; private set; }
         public DbSet<ChatMessage> ChatMessages { get; private set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
