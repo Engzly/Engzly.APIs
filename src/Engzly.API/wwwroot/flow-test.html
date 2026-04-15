@@ -324,6 +324,13 @@
         </div>
     </div>
 
+    <!-- STEP 6.5: START GIG (ESCROW) -->
+    <div class="step">
+        <h2><span class="num">6b</span> Start gig — fund escrow <span class="pill">client</span></h2>
+        <p class="hint">After the proposal is approved the gig sits in <b>HelpersAssigned</b>. The client starts the gig, which creates a Fawaterak invoice for the full budget and returns a payment URL. Once the Fawaterak webhook confirms the payment, the gig moves to <b>InProgress</b>. Use <i>Get Payment Status</i> to poll.</p>
+        <div class="row"><button onclick="startGig()">Start Gig (create invoice)</button><button class="secondary" onclick="openPaymentUrl()">Open Checkout</button><button class="secondary" onclick="getPaymentStatus()">Get Payment Status</button></div>
+    </div>
+
     <!-- STEP 7: SIGNALR -->
     <div class="step">
         <h2><span class="num">7</span> Connect SignalR hubs</h2>
@@ -435,6 +442,7 @@
         <div class="state-row"><span>proposalId</span><span id="st_proposalId">—</span></div>
         <div class="state-row"><span>conversationId</span><span id="st_conversationId">—</span></div>
         <div class="state-row"><span>messageId</span><span id="st_messageId">—</span></div>
+        <div class="state-row"><span>paymentId</span><span id="st_paymentId">—</span></div>
     </div>
     <div class="state-box">
         <h3>Log</h3>
@@ -465,6 +473,8 @@
         proposalId: null,
         conversationId: null,
         messageId: null,
+        paymentId: null,
+        paymentUrl: null,
         lastSentId: { c: null, h: null },
     };
     window.__flow = state;
@@ -482,6 +492,7 @@
         document.getElementById('st_proposalId').textContent = short(state.proposalId);
         document.getElementById('st_conversationId').textContent = short(state.conversationId);
         document.getElementById('st_messageId').textContent = short(state.messageId);
+        document.getElementById('st_paymentId').textContent = short(state.paymentId);
     }
 
     function log(msg, kind='info') {
@@ -952,6 +963,33 @@
     };
 
     // STEP 13: COMPLETE / VERIFY / DELETE
+    window.startGig = async () => {
+        if (!state.gigId) { log('no gigId — publish & approve a proposal first', 'err'); return; }
+        try {
+            const res = await api(`/api/gigs/${state.gigId}/start`, { role: 'c', method: 'POST' });
+            const data = res?.data || res;
+            state.paymentId = data.paymentId;
+            state.paymentUrl = data.paymentUrl;
+            refreshStateUi();
+            log(`start gig: payment ${data.paymentId} amount ${data.amount} EGP (commission ${data.platformCommission}, helper ${data.helperAmount})`, 'ok');
+            log(`payment url: ${data.paymentUrl}`, 'rx');
+        } catch (e) { log(`startGig: ${e.message}`, 'err'); }
+    };
+
+    window.openPaymentUrl = () => {
+        if (!state.paymentUrl) { log('no payment url yet', 'err'); return; }
+        window.open(state.paymentUrl, '_blank');
+    };
+
+    window.getPaymentStatus = async () => {
+        if (!state.gigId) { log('no gigId', 'err'); return; }
+        try {
+            const res = await api(`/api/payments/gig/${state.gigId}/status`, { role: 'c' });
+            const d = res?.data || res;
+            log(`payment status: ${d.status} (funded ${d.fundedAtUtc || 'no'})`, 'ok');
+        } catch (e) { log(`getPaymentStatus: ${e.message}`, 'err'); }
+    };
+
     window.completeGig = async () => {
         if (!state.c.token || !state.gigId) { log('need client + gigId', 'err'); return; }
         try {

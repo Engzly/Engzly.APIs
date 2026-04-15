@@ -373,6 +373,32 @@
           }
         },
         {
+          "name": "Start Gig (fund escrow)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.paymentId) pm.collectionVariables.set('paymentId', json.data.paymentId);",
+                  "if (json && json.data && json.data.paymentUrl) pm.collectionVariables.set('paymentUrl', json.data.paymentUrl);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/gigs/{{gigId}}/start",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "gigs", "{{gigId}}", "start"]
+            },
+            "description": "Client starts the gig after a helper has been assigned. Creates a Fawaterak invoice for the full gig budget, stores the Payment in Pending→AwaitingFunding, and returns a payment URL. When the Fawaterak webhook confirms, the gig flips to InProgress."
+          }
+        },
+        {
           "name": "Complete Task",
           "request": {
             "method": "POST",
@@ -1092,6 +1118,46 @@
               "mode": "raw",
               "raw": "{\n  \"title\": \"Kitchen sink is leaking\",\n  \"description\": \"Water dripping from under the sink, need a plumber to fix it today\",\n  \"top_k\": 3,\n  \"candidates\": [\n    { \"id\": \"events\", \"name\": \"Events\", \"description\": \"Event planning and support.\" },\n    { \"id\": \"delivery\", \"name\": \"Delivery\", \"description\": \"Picking up and delivering items.\" },\n    { \"id\": \"fix-things\", \"name\": \"Fix Things\", \"description\": \"Repairs and maintenance. Plumbing, electrical, leaks, appliances.\" },\n    { \"id\": \"cleaning\", \"name\": \"Cleaning\", \"description\": \"House, office, and post-event cleaning.\" },\n    { \"id\": \"moving-transport\", \"name\": \"Moving & Transport\", \"description\": \"Moving homes, heavy lifting.\" }\n  ]\n}"
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments (Fawaterak)",
+      "description": "Escrow payments flow. Client starts the gig (creates a Fawaterak invoice), Fawaterak posts back to the webhook when the invoice is paid, and the gig transitions to InProgress. Use Get Payment Status to poll for state from the client side.",
+      "item": [
+        {
+          "name": "Get Payment Status (gig-scoped)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/payments/gig/{{gigId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments", "gig", "{{gigId}}", "status"]
+            },
+            "description": "Returns the Payment row for this gig if the current user is the client or the assigned helper. Shows status, amount, commission, helper amount, provider invoice id, and timestamps."
+          }
+        },
+        {
+          "name": "Fawaterak Webhook (simulated)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Fawaterak-Signature", "value": "<hex-hmac-sha256-of-body-using-HashKey>" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/payments/webhook/fawaterak",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments", "webhook", "fawaterak"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoice_id\": \"<provider-invoice-id>\",\n  \"invoice_status\": \"paid\"\n}"
+            },
+            "description": "Entry point Fawaterak will call after the client pays the invoice. The handler: (1) verifies X-Fawaterak-Signature against the raw body using FawaterakOptions.HashKey via HMAC-SHA256; (2) looks up the Payment by ProviderInvoiceId; (3) idempotently transitions the Payment to Funded and the Gig to InProgress, or records a failure event. Replace the signature header and invoice id with real values when testing end-to-end."
           }
         }
       ]
