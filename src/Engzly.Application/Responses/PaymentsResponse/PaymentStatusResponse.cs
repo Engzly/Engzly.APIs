@@ -15,5 +15,6 @@ namespace Engzly.Application.Responses.PaymentsResponse
         public string? PaymentUrl { get; set; }
         public DateTime? FundedAtUtc { get; set; }
         public DateTime? ReleasedAtUtc { get; set; }
+        public DateTime? RefundedAtUtc { get; set; }
     }
 }

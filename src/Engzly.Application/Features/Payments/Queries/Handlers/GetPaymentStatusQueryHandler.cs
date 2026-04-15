@@ -39,7 +39,8 @@ namespace Engzly.Application.Features.Payments.Queries.Handlers
                 ProviderInvoiceId = payment.ProviderInvoiceId,
                 PaymentUrl = payment.ProviderPaymentUrl,
                 FundedAtUtc = payment.FundedAtUtc,
-                ReleasedAtUtc = payment.ReleasedAtUtc
+                ReleasedAtUtc = payment.ReleasedAtUtc,
+                RefundedAtUtc = payment.RefundedAtUtc
             });
         }
 

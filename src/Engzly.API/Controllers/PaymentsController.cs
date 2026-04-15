@@ -33,6 +33,23 @@ namespace Engzly.API.Controllers
             return Resolve(result);
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpPost("{paymentId}/refund")]
+        public async Task<IActionResult> Refund(string paymentId, [FromBody] RefundPaymentRequest body)
+        {
+            var result = await _mediator.Send(new RefundPaymentCommand
+            {
+                PaymentId = paymentId,
+                Reason = body?.Reason
+            });
+            return Resolve(result);
+        }
+
+        public sealed class RefundPaymentRequest
+        {
+            public string? Reason { get; set; }
+        }
+
         [AllowAnonymous]
         [HttpGet("return/success")]
         public IActionResult ReturnSuccess() => Ok(new { status = "success" });
