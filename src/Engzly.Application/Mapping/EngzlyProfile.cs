@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Engzly.Application.Features.Categories.Commands.Models;
 using Engzly.Application.Features.Gigs.Commands.Models;
 using Engzly.Application.Features.Users.Commands.Models;
 using Engzly.Application.Responses.GigsResponse;
@@ -22,21 +23,21 @@ public sealed class EngzlyProfile : Profile
 
         CreateMap<User, ClientInfoResponse>()
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.FirstName + " " + src.LastName));
-            //.ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.ProfileImageUrl));
+        //.ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.ProfileImageUrl));
 
- CreateMap<PublishTaskCommand, Gig>()
-            .ForMember(d => d.Location, opt => opt.Ignore())
-            .ForMember(d => d.Medias, opt => opt.Ignore())
-            .ForMember(d => d.Id, opt => opt.Ignore())
-            .ForMember(d => d.OwnerId, opt => opt.Ignore())
-            .ForMember(d => d.Status, opt => opt.Ignore())
-            .ForMember(d => d.CreatedOn, opt => opt.Ignore())
-            .ForMember(d => d.LastModifiedOn, opt => opt.Ignore())
-            .ForMember(d => d.CompletedOn, opt => opt.Ignore())
+        CreateMap<PublishTaskCommand, Gig>()
+                   .ForMember(d => d.Location, opt => opt.Ignore())
+                   .ForMember(d => d.Medias, opt => opt.Ignore())
+                   .ForMember(d => d.Id, opt => opt.Ignore())
+                   .ForMember(d => d.OwnerId, opt => opt.Ignore())
+                   .ForMember(d => d.Status, opt => opt.Ignore())
+                   .ForMember(d => d.CreatedOn, opt => opt.Ignore())
+                   .ForMember(d => d.LastModifiedOn, opt => opt.Ignore())
+                   .ForMember(d => d.CompletedOn, opt => opt.Ignore())
 
-            .ForMember(d => d.Client, opt => opt.Ignore())
-            .ForMember(d => d.Category, opt => opt.Ignore())
-            .ForMember(d => d.TaskersAssignments, opt => opt.Ignore());
+                   .ForMember(d => d.Client, opt => opt.Ignore())
+                   .ForMember(d => d.Category, opt => opt.Ignore())
+                   .ForMember(d => d.TaskersAssignments, opt => opt.Ignore());
 
         CreateMap<EditTaskCommand, Gig>()
             .ForMember(d => d.Location, opt => opt.Ignore())
@@ -52,5 +53,6 @@ public sealed class EngzlyProfile : Profile
             .ForMember(d => d.TaskersAssignments, opt => opt.Ignore());
 
 
+        CreateMap<AddCategoryCommand, Category>();
     }
 }

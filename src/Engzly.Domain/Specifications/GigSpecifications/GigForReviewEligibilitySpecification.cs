@@ -1,7 +1,7 @@
 ﻿using Engzly.Domain.Entities.Gigs;
 using Engzly.Domain.Enums;
 
-namespace Engzly.Domain.Specifications;
+namespace Engzly.Domain.Specifications.GigSpecifications;
 
 public sealed class GigForReviewEligibilitySpecification : BaseSpecification<Gig>
 {
@@ -12,11 +12,11 @@ public sealed class GigForReviewEligibilitySpecification : BaseSpecification<Gig
         : base(g =>
             g.Status == GigStatus.Completed &&
             (
-                (g.OwnerId == reviewerId && 
-                 g.TaskersAssignments.Any(t => t.TaskerId == reviewedUserId))
+                g.OwnerId == reviewerId &&
+                 g.TaskersAssignments.Any(t => t.TaskerId == reviewedUserId)
                 ||
-                (g.OwnerId == reviewedUserId && 
-                 g.TaskersAssignments.Any(t => t.TaskerId == reviewerId))
+                g.OwnerId == reviewedUserId &&
+                 g.TaskersAssignments.Any(t => t.TaskerId == reviewerId)
             )
         )
     {

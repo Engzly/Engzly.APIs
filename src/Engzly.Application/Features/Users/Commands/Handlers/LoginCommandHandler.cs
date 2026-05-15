@@ -69,13 +69,17 @@ public class LoginCommandHandler(
 
         logger.LogInformation("Login successful for User {UserId}", user.Id);
 
+        var role = await userManager.GetRolesAsync(user);
+
         var response = new LoginResponse
         {
             UserId = user.Id,
             UserName = user.UserName,
             Email = user.Email,
             AccessToken = jwtToken,
-            RefreshToken = refreshToken
+            RefreshToken = refreshToken,
+            Role = role.FirstOrDefault() ?? user.AccountType.ToString()
+
         };
 
         return Success(response, "Login is successful");

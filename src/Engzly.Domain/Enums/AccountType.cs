@@ -3,6 +3,7 @@
     public enum AccountType
     {
         Client,
-        Helper
+        Helper,
+        Admin
     }
 }

@@ -8,6 +8,7 @@ using Engzly.Domain.Entities.Identity;
 using Engzly.Domain.Entities.Payments;
 using Engzly.Domain.Enums;
 using Engzly.Domain.Specifications;
+using Engzly.Domain.Specifications.GigSpecifications;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;

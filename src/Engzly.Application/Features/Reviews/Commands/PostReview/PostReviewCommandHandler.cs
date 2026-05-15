@@ -2,14 +2,13 @@
 using Engzly.Application.Interfaces.Repositories;
 using Engzly.Domain.Entities.Gigs;
 using Engzly.Domain.Entities.Reviews;
-using Engzly.Domain.Specifications;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Engzly.Application.Features.Reviews.Commands.PostReview;
 
 public sealed class PostReviewCommandHandler(
-        IGenericRepository<Review,string> reviewRepository,
+        IGenericRepository<Review, string> reviewRepository,
         IGenericRepository<Gig, string> gigRepository,
         ICurrentUserService currentUserService,
         ILogger<PostReviewCommandHandler> logger)
@@ -29,13 +28,13 @@ public sealed class PostReviewCommandHandler(
 
         // Business Rule 1: Reviewer must have completed at least one task with ReviewedUser
         // Business Rule 2: Gig status must be Completed
-        var spec = new GigForReviewEligibilitySpecification(
-                request.GigId,
-                currentUserId,
-                request.ReviewedUserId
-            );
+        //var spec = new GigForReviewEligibilitySpecification(
+        //        request.GigId,
+        //        currentUserId,
+        //        request.ReviewedUserId
+        //    );
 
-        var gig = await gigRepository.GetByIdAsync(request.GigId, spec, cancellationToken);
+        var gig = await gigRepository.GetByIdAsync(request.GigId,/* spec,*/ cancellationToken);
 
         if (gig is null)
         {

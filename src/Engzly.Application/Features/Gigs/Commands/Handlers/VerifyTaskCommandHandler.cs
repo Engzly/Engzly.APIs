@@ -18,16 +18,16 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
     {
         public async Task<Response<string>> Handle(VerifyTaskCommand request, CancellationToken ct)
         {
-            var gig = await unitOfWork.Gigs.GetByIdAsync(request.Id, new GigWithAssignmentsByIdSpecification(), ct);
+            var gig = await unitOfWork.Gigs.GetByIdAsync(request.Id, /*new GigWithAssignmentsByIdSpecification(),*/ ct);
             if (gig == null)
                 return NotFound<string>("Task not found");
 
             var me = currentUser.GetCurrentUser();
             if (me == null)
-                return Unauthorized<string>();
+                return Unauthorized<string>("User not found");
 
             if (gig.OwnerId != me.Id)
-                return Unauthorized<string>();
+                return Unauthorized<string>("User is not the owner of this task.");
 
             if (gig.Status != GigStatus.PendingVerification)
                 return BadRequest<string>("Task must be pending verification before it can be verified.");

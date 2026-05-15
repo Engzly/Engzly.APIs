@@ -1,6 +1,7 @@
 ﻿using Engzly.Application.Common.Bases;
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 
 namespace Engzly.Application.Common.Behaviors
 {
@@ -25,6 +26,7 @@ namespace Engzly.Application.Common.Behaviors
                         var response = Activator.CreateInstance(responseType) as dynamic;
 
                         response.Succeeded = false;
+                        response.StatusCode = StatusCodes.Status400BadRequest; // Bad Request
                         response.Message = "Validation Failed";
                         response.Errors = errors;
                         var message = failures.Select(x => x.PropertyName + ": " + x.ErrorMessage).FirstOrDefault();

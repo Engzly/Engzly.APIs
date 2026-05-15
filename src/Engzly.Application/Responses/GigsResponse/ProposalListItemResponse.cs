@@ -4,7 +4,7 @@ namespace Engzly.Application.Responses.GigsResponse
 {
     public sealed class ProposalListItemResponse
     {
-        public string Id { get; set; } = null!;
+        public string PrposalId { get; set; } = null!;
         public string GigId { get; set; } = null!;
         public string? GigTitle { get; set; }
         public string TaskerId { get; set; } = null!;

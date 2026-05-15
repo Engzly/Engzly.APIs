@@ -54,7 +54,7 @@ namespace Engzly.Infrastructure.Persistence.Seeders
                 FirstName = firstName,
                 LastName = lastName,
                 City = "N/A",
-                AccountType = AccountType.Client,
+                AccountType = AccountType.Admin,
                 Status = UserStatus.Active,
                 IsIdentityVerified = true
             };

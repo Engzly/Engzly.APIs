@@ -21,7 +21,8 @@ namespace Engzly.Infrastructure.Authentication
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Name, user.UserName!),
-                new Claim(ClaimTypes.Email, user.Email!)
+                new Claim(ClaimTypes.Email, user.Email!),
+                new Claim("accountType", user.AccountType.ToString())
             };
 
             var roles = await _userManager.GetRolesAsync(user);

@@ -17,14 +17,14 @@ namespace Engzly.Application.Common.Bases
                 Message = "Deleted Successfully"
             };
         }
-        public Response<T> Success<T>(T entity, object Meta = null)
+        public Response<T> Success<T>(T entity, string message = "Success", object Meta = null)
         {
             return new Response<T>()
             {
                 Data = entity,
                 StatusCode = (int)System.Net.HttpStatusCode.OK,
                 Succeeded = true,
-                Message = "Added Successfully",
+                Message = message,
                 Meta = Meta
             };
         }

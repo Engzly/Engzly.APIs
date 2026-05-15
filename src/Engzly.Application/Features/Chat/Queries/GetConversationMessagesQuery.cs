@@ -85,7 +85,7 @@ namespace Engzly.Application.Features.Chat.Queries
                 totalPages = (int)Math.Ceiling(total / (double)size)
             };
 
-            return Success(items, meta);
+            return Success(items, Meta: meta);
         }
 
         private sealed class ConversationMessagesSpec : BaseSpecification<ChatMessage>

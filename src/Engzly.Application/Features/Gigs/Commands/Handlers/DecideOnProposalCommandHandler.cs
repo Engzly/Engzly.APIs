@@ -101,7 +101,7 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
                                 LastMessageOn = now
                             };
                             await _conversationsRepo.AddAsync(conversation, ct);
-                            await _conversationsRepo.CompleteAsync(ct);
+                            //await _conversationsRepo.CompleteAsync(ct);
 
                             var clientParticipant = new ConversationParticipant
                             {
@@ -112,7 +112,7 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
                                 JoinedOn = now
                             };
                             await _participantsRepo.AddAsync(clientParticipant, ct);
-                            await _participantsRepo.CompleteAsync(ct);
+                            //await _participantsRepo.CompleteAsync(ct);
                         }
 
                         var existingHelperParticipation = await _participantsRepo.GetAllAsync(
@@ -139,7 +139,7 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
                             helperParticipant.JoinedOn = now;
                             _participantsRepo.Update(helperParticipant);
                         }
-                        await _participantsRepo.CompleteAsync(ct);
+                        //await _participantsRepo.CompleteAsync(ct);
 
                         conversationToNotify = conversation;
                         joinedParticipant = new ConversationParticipantItem(

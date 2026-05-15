@@ -3,14 +3,14 @@ using MediatR;
 
 namespace Engzly.Application.Features.Gigs.Commands.Models
 {
- public sealed class CompleteTaskCommand : IRequest<Response<string>>
-{
-    public string Id { get; set; }
-
-    public CompleteTaskCommand(string id)
+    public sealed class CompleteTaskCommand : IRequest<Response<string>>
     {
-        Id = id;
+        public string GigId { get; set; }
+
+        public CompleteTaskCommand(string gigId)
+        {
+            GigId = gigId;
+        }
     }
-}
 
 }

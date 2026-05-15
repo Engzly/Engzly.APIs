@@ -72,10 +72,22 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
                     user.Id, otpError);
             }
 
+
+            string role = request.AccountType switch
+            {
+                AccountType.Helper => "Helper",
+                AccountType.Admin => "Admin",
+                _ => "Client"
+            };
+
+            await userManager.AddToRoleAsync(user, role);
+
+
             var response = new CreateUserResponse
             {
                 UserId = user.Id,
-                RequiresEmailVerification = true
+                RequiresEmailVerification = true,
+                Role = role
             };
 
             return Success(

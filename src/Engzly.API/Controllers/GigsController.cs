@@ -27,6 +27,7 @@ namespace Engzly.API.Controllers
             return Resolve(result);
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTaskDetails(string id)
         {
@@ -96,26 +97,26 @@ namespace Engzly.API.Controllers
 
 
         [Authorize]
-        [HttpPost("{id}/start")]
-        public async Task<IActionResult> Start(string id)
+        [HttpPost("{gigId}/start")]
+        public async Task<IActionResult> Start(string gigId)
         {
-            var result = await _mediator.Send(new StartGigCommand { GigId = id });
+            var result = await _mediator.Send(new StartGigCommand { GigId = gigId });
             return Resolve(result);
         }
 
         [Authorize]
-        [HttpPost("{id}/complete")]
-        public async Task<IActionResult> Complete(string id)
+        [HttpPost("{gigId}/complete")]
+        public async Task<IActionResult> Complete(string gigId)
         {
-            var result = await _mediator.Send(new CompleteTaskCommand(id));
+            var result = await _mediator.Send(new CompleteTaskCommand(gigId));
             return Resolve(result);
         }
 
         [Authorize]
-        [HttpPost("{id}/verify")]
-        public async Task<IActionResult> Verify(string id)
+        [HttpPost("{gigid}/verify")]
+        public async Task<IActionResult> Verify(string gigid)
         {
-            var result = await _mediator.Send(new VerifyTaskCommand(id));
+            var result = await _mediator.Send(new VerifyTaskCommand(gigid));
             return Resolve(result);
         }
 
@@ -162,7 +163,7 @@ namespace Engzly.API.Controllers
         }
 
         [Authorize]
-        [HttpPatch("requests/{proposalId}")]
+        [HttpPatch("requests/{proposalid}")]
         public async Task<IActionResult> DecideOnRequest([FromRoute] string proposalid, [FromBody] DecideOnProposalDto command)
         {
 
