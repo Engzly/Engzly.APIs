@@ -188,6 +188,18 @@ namespace Engzly.API.Controllers
         }
 
         public sealed record RemoveHelperBody(string Reason);
+
+
+        [Authorize]
+        [HttpGet("clientgigs")]
+        public async Task<IActionResult> GetClientGigs()
+        {
+            var result = await _mediator.Send(new GetClientGigsQuery());
+            return Resolve(result);
+        }
+
+
+
     }
 }
 
