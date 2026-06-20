@@ -6,7 +6,6 @@ using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
 using Engzly.Domain.Entities.Verification;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Engzly.API.Controllers
@@ -35,14 +34,14 @@ namespace Engzly.API.Controllers
             return Resolve(result);
         }
 
-        [HttpGet("file/{id}/{kind}")]
-        public async Task<IActionResult> GetFile(string id, string kind, CancellationToken cancellationToken)
+        [HttpGet("file/{verificationid}/{Filekind}")]
+        public async Task<IActionResult> GetFile(string verificationid, string Filekind, CancellationToken cancellationToken)
         {
             var caller = _currentUser.GetCurrentUser();
             if (caller is null || string.IsNullOrWhiteSpace(caller.Id))
                 return Unauthorized();
 
-            var verification = await _verificationRepo.GetByIdAsync(id, cancellationToken);
+            var verification = await _verificationRepo.GetByIdAsync(verificationid, cancellationToken);
             if (verification is null)
                 return NotFound();
 
@@ -51,7 +50,7 @@ namespace Engzly.API.Controllers
             if (!isAdmin && !isOwner)
                 return Forbid();
 
-            var relativePath = kind.ToLowerInvariant() switch
+            var relativePath = Filekind.ToLowerInvariant() switch
             {
                 "front" => verification.NationalIdFrontPath,
                 "back" => verification.NationalIdBackPath,
@@ -70,7 +69,7 @@ namespace Engzly.API.Controllers
                 VerificationId = verification.Id,
                 AccessedByUserId = caller.Id,
                 AccessedOn = DateTime.UtcNow,
-                DocumentKind = kind.ToLowerInvariant()
+                DocumentKind = Filekind.ToLowerInvariant()
             }, cancellationToken);
             await _accessLogRepo.CompleteAsync(cancellationToken);
 

@@ -37,7 +37,7 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
 
             logger.LogInformation("Refresh token revoked successfully for User {UserId}", user.Id);
 
-            return Success("Token Revoked Successfully");
+            return Success(user.Id, "Token Revoked Successfully");
         }
     }
 }

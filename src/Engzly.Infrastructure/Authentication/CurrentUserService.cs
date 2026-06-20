@@ -30,10 +30,13 @@ internal sealed class CurrentUserService(IHttpContextAccessor httpContextAccesso
         var email = claimsPrincipal.FindFirst(ClaimTypes.Email)?.Value
             ?? throw new UnauthorizedAccessException("Email claim is missing.");
 
+        var accountType = claimsPrincipal.FindFirst("accountType")?.Value;
+
+
         var roles = claimsPrincipal.FindAll(ClaimTypes.Role)
             .Select(r => r.Value)
             .ToList();
 
-        return new CurrentUser(id, email, roles);
+        return new CurrentUser(id, email, accountType, roles);
     }
 }

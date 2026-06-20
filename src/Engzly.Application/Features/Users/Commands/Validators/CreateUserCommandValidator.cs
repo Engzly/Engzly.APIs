@@ -24,29 +24,22 @@ namespace Engzly.Application.Features.Users.Commands.Validators
             RuleFor(S => S.LastName)
                 .NotEmpty().WithMessage("Last name is required")
                 .Length(1, 100).WithMessage("Last name must be between 1 and 100 characters");
+
+            RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("Email is required")
+            .EmailAddress().WithMessage("Invalid email format");
         }
 
         public void ApplyCustomValidationsRule()
         {
             RuleFor(x => x.Email)
-                .MustAsync(async (model, email, cancellation) =>
-                {
-                    var usersWithSameEmail = _userManager.Users
-                        .Where(u => u.Email == email)
-                        .ToList();
+            .MustAsync(async (email, cancellation) =>
+            {
+                var userExists = await _userManager.FindByEmailAsync(email);
+                return userExists == null;
+            })
+            .WithMessage("Email already exists. So You Can't Create More than one Account  Please use another email.");
 
-                    if (!usersWithSameEmail.Any())
-                        return true;
-
-                    if (usersWithSameEmail.Count >= 2)
-                        return false;
-
-                    var sameTypeExists = usersWithSameEmail
-                        .Any(u => u.AccountType == model.AccountType);
-
-                    return !sameTypeExists;
-                })
-                .WithMessage("You can only create two accounts with the same email (Helper and Tasker)");
         }
     }
 }

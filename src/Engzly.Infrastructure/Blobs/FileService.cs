@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using Engzly.Application.Interfaces.Services;
+﻿using Engzly.Application.Interfaces.Repositories;
 using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
 using Engzly.Application.Responses.GigsResponse;
 using Engzly.Domain.Entities.Gigs;
@@ -14,12 +10,14 @@ namespace Engzly.Infrastructure.Blobs
     public class FileService : IFileService
     {
         private const string PrivateRootFolder = "App_Data";
+        private readonly IGenericRepository<Media, Guid> _mediaRepository;
 
         private readonly IWebHostEnvironment _environment;
 
-        public FileService(IWebHostEnvironment environment)
+        public FileService(IWebHostEnvironment environment, IGenericRepository<Media, Guid> mediaRepository)
         {
             _environment = environment;
+            _mediaRepository = mediaRepository;
         }
 
         private string PrivateRoot => Path.Combine(_environment.ContentRootPath, PrivateRootFolder);
@@ -138,17 +136,20 @@ namespace Engzly.Infrastructure.Blobs
                 {
                     Id = mediaId,
                     Url = relativeUrl,
-                    IsTemp = true, 
-                    GigId = null  
+                    IsTemp = true,
+                    GigId = null
                 };
 
-               
+                await _mediaRepository.AddAsync(media);
+                await _mediaRepository.CompleteAsync();
+
 
                 responses.Add(new MediaUploadResponse
                 {
                     MediaId = mediaId,
                     Url = relativeUrl
                 });
+
             }
 
             return responses;

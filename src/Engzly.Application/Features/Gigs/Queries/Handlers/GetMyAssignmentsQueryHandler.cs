@@ -22,15 +22,17 @@ namespace Engzly.Application.Features.Gigs.Queries.Handlers
             if (caller is null || string.IsNullOrWhiteSpace(caller.Id))
                 return Unauthorized<IReadOnlyList<AssignmentListItemResponse>>();
 
-            var role = (request.Role ?? "any").ToLowerInvariant();
+            //var role = (request.Role ?? "any").ToLowerInvariant();
             var userId = caller.Id;
 
-            var spec = role switch
-            {
-                "client" => new AssignmentsByUserSpec(userId, asClient: true),
-                "helper" => new AssignmentsByUserSpec(userId, asClient: false),
-                _ => new AssignmentsByUserSpec(userId, asClient: null)
-            };
+
+            var spec = new AssignmentsByUserSpec(userId);
+            //var spec = role switch
+            //{
+            //    "client" => new AssignmentsByUserSpec(userId, asClient: true),
+            //    "helper" => new AssignmentsByUserSpec(userId, asClient: false),
+            //    _ => new AssignmentsByUserSpec(userId, asClient: null)
+            //};
 
             var assignments = await _repo.GetAllAsync(spec, cancellationToken);
 
@@ -56,12 +58,12 @@ namespace Engzly.Application.Features.Gigs.Queries.Handlers
 
         private sealed class AssignmentsByUserSpec : BaseSpecification<GigAssignment>
         {
-            public AssignmentsByUserSpec(string userId, bool? asClient)
-                : base(a => asClient == true
-                    ? a.ClientId == userId
-                    : asClient == false
-                        ? a.TaskerId == userId
-                        : a.ClientId == userId || a.TaskerId == userId)
+            public AssignmentsByUserSpec(string userId/*, bool? asClient*/)
+                : base(a => /*asClient == true*/
+                        //? a.ClientId == userId
+                        //: asClient == false ?
+                        a.TaskerId == userId
+                       || a.ClientId == userId /*|| a.TaskerId == userId*/)
             {
                 AddInclude(a => a.Gig);
                 AddInclude(a => a.Client);

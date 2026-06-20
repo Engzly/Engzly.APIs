@@ -4,7 +4,7 @@ using Engzly.Application.Interfaces.Authentication;
 using Engzly.Application.Interfaces.Repositories;
 using Engzly.Domain.Entities.Gigs;
 using Engzly.Domain.Enums;
-using Engzly.Domain.Specifications;
+using Engzly.Domain.Specifications.GigSpecifications;
 using MediatR;
 
 namespace Engzly.Application.Features.Gigs.Commands.Handlers
@@ -16,7 +16,7 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
     {
         public async Task<Response<string>> Handle(CompleteTaskCommand request, CancellationToken cancellationToken)
         {
-            var gig = await _gigRepo.GetByIdAsync(request.Id, new GigWithAssignmentsByIdSpecification(), cancellationToken);
+            var gig = await _gigRepo.GetByIdAsync(request.GigId, new GigWithAssignmentsByIdSpecification(), cancellationToken);
 
             if (gig is null)
                 return NotFound<string>("Task not found");
@@ -27,11 +27,11 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
 
             if (assignment is null)
             {
-                return Unauthorized<string>();
+                return Unauthorized<string>("You are not assigned to this task.");
             }
 
             if (gig.OwnerId == currentUserId)
-                return Unauthorized<string>();
+                return Unauthorized<string>("Owner cannot complete the task.");
 
             if (gig.Status != GigStatus.InProgress)
                 return BadRequest<string>("Only tasks in progress can be marked as complete.");

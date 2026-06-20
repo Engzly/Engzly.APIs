@@ -1,6 +1,5 @@
 
 using Engzly.Application.Features.Gigs.Commands.Models;
-using Engzly.Application.Features.Gigs.Queries.Models;
 using Engzly.Application.Interfaces.Repositories;
 using Engzly.Domain.Entities.Gigs;
 using Engzly.Domain.Specifications;
@@ -8,43 +7,47 @@ using FluentValidation;
 
 namespace Engzly.Application.Features.Gigs.Validator
 {
-public sealed class PublishTaskCommandValidator : AbstractValidator<PublishTaskCommand>
-{
-    public PublishTaskCommandValidator(IGenericRepository<Category, string> categoryRepo)
+    public sealed class PublishTaskCommandValidator : AbstractValidator<PublishTaskCommand>
     {
-        RuleFor(x => x.Title)
-            .NotEmpty()
-            .Length(10, 100);
+        public PublishTaskCommandValidator(IGenericRepository<Category, string> categoryRepo)
+        {
+            RuleFor(x => x.Title)
+                .NotEmpty()
+                .Length(10, 100);
 
-        RuleFor(x => x.Description)
-            .NotEmpty()
-            .MaximumLength(2000);
+            RuleFor(x => x.Description)
+                .NotEmpty()
+                .MaximumLength(2000);
 
-        RuleFor(x => x.NumberOfTaskersNeeded)
-            .InclusiveBetween(1, 50);
+            RuleFor(x => x.NumberOfTaskersNeeded)
+                .InclusiveBetween(1, 50);
 
-        RuleFor(x => x.Budget)
-            .GreaterThan(0);
+            RuleFor(x => x.Budget)
+                .GreaterThan(0);
 
-        RuleFor(x => x.Latitude)
-            .InclusiveBetween(-90, 90);
+            RuleFor(x => x.Latitude)
+                .InclusiveBetween(-90, 90);
 
-        RuleFor(x => x.Longitude)
-            .InclusiveBetween(-180, 180);
+            RuleFor(x => x.Longitude)
+                .InclusiveBetween(-180, 180);
 
-        RuleFor(x => x.CategoryId!)
-            .MustAsync(async (categoryId, ct) =>
-                await categoryRepo.ExistsAsync(new CategoryByIdSpec(categoryId), ct))
-            .When(x => !string.IsNullOrWhiteSpace(x.CategoryId))
-            .WithMessage("CategoryId does not exist.");
-//Url
-            RuleFor(x => x.MediaIds)
-                .Must(mediaIds => mediaIds == null || mediaIds.Count <= 10)
-                .WithMessage("You can upload at most 10 media files.");
+            RuleFor(x => x.CategoryId!)
+                .MustAsync(async (categoryId, ct) =>
+                    await categoryRepo.ExistsAsync(new CategoryByIdSpec(categoryId), ct))
+                .When(x => !string.IsNullOrWhiteSpace(x.CategoryId))
+                .WithMessage("CategoryId does not exist.");
+            //Url
 
-            RuleForEach(x => x.MediaIds)
-            .NotEmpty()
-            .WithMessage("Media Id cannot be empty.");
+            When(x => x.MediaIds != null, () =>
+            {
+                RuleFor(x => x.MediaIds!)
+                    .Must(list => list.Count <= 10)
+                    .WithMessage("You can upload at most 10 media files.");
+
+                RuleForEach(x => x.MediaIds!)
+                    .NotEmpty()
+                    .WithMessage("Media Id cannot be empty.");
+            });
 
             //RuleForEach(x => x.MediaIds)
             //    .Must(url => string.IsNullOrWhiteSpace(url) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
@@ -55,14 +58,14 @@ public sealed class PublishTaskCommandValidator : AbstractValidator<PublishTaskC
             .GreaterThanOrEqualTo(DateTime.UtcNow.AddMinutes(-1))
             .WithMessage("StartDate must be now or in the future.");
 
-        RuleFor(x => x.DueDate)
-            .GreaterThan(x => x.StartDate)
-            .WithMessage("DueDate must be after StartDate.");
-    }
+            RuleFor(x => x.DueDate)
+                .GreaterThan(x => x.StartDate)
+                .WithMessage("DueDate must be after StartDate.");
+        }
 
-    private sealed class CategoryByIdSpec : BaseSpecification<Category>
-    {
-        public CategoryByIdSpec(string id) : base(c => c.Id == id) { }
+        private sealed class CategoryByIdSpec : BaseSpecification<Category>
+        {
+            public CategoryByIdSpec(string id) : base(c => c.Id == id) { }
+        }
     }
-}
 }

@@ -25,7 +25,7 @@ namespace Engzly.Application.Features.Gigs.Queries.Handlers
         {
             var currentUser = currentUserService.GetCurrentUser();
             var currentUserId = currentUser.Id;
-            
+
             logger.LogInformation(
                 "Fetching task details. TaskId: {TaskId}, UserId: {UserId}",
                 request.TaskId,
@@ -57,6 +57,14 @@ namespace Engzly.Application.Features.Gigs.Queries.Handlers
             result.CurrentFilledCount =
                 task.TaskersAssignments.Count;
 
+            result.ClientInfo = task.Client != null
+                ? new ClientInfoResponse
+                {
+                    UserId = task.Client.Id,
+                    Name = $"{task.Client.FirstName} {task.Client.LastName}",
+                    AvatarUrl = task.Client.ProfileImageUrl
+                } : null;
+
             logger.LogInformation(
                 "Task details retrieved successfully. TaskId: {TaskId}, FilledCount: {FilledCount}",
                 request.TaskId,
@@ -68,7 +76,8 @@ namespace Engzly.Application.Features.Gigs.Queries.Handlers
                 currentUserId,
                 result.IsAppliedByMe);
 
-            return Success(result);
+
+            return Success(result, "Task Details retrieved Successfully");
         }
     }
 }

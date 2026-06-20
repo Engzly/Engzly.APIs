@@ -1,6 +1,5 @@
 ﻿using Engzly.Application.Common.Bases;
 using Engzly.Application.Features.Gigs.Commands.Models;
-using Engzly.Application.Interfaces.Services;
 using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
 using Engzly.Application.Responses.GigsResponse;
 using MediatR;
@@ -31,6 +30,9 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
             }
 
             var uploadedMedias = await _fileService.UploadMediaFilesAsync(request.Images);
+
+
+            // Save media information to the database if needed (not implemented here)
 
             response.Data = uploadedMedias;
             response.Succeeded = true;

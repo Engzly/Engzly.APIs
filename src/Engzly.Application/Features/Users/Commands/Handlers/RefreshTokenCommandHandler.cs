@@ -36,7 +36,7 @@ namespace Engzly.Application.Features.Users.Commands.Handlers
             if (user.RefreshTokenExpiryTime <= DateTime.UtcNow)
             {
                 logger.LogWarning(
-                    "Refresh token failed: Token expired for User {UserId}", 
+                    "Refresh token failed: Token expired for User {UserId}",
                     user.Id
                 );
                 return BadRequest<LoginResponse>("Refresh Token Expired");

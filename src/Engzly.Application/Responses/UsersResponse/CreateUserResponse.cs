@@ -4,5 +4,6 @@ namespace Engzly.Application.Responses.UsersResponse
     {
         public string UserId { get; set; } = null!;
         public bool RequiresEmailVerification { get; set; } = true;
+        public string Role { get; set; } = null!;
     }
 }

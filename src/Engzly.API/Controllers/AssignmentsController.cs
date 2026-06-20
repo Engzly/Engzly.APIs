@@ -9,9 +9,9 @@ namespace Engzly.API.Controllers
     public sealed class AssignmentsController(ISender _mediator) : BaseApiController
     {
         [HttpGet("mine")]
-        public async Task<IActionResult> Mine([FromQuery] string? role)
+        public async Task<IActionResult> Mine(/*[FromQuery] string? role*/)
         {
-            var result = await _mediator.Send(new GetMyAssignmentsQuery(role));
+            var result = await _mediator.Send(new GetMyAssignmentsQuery(/*role*/));
             return Resolve(result);
         }
     }

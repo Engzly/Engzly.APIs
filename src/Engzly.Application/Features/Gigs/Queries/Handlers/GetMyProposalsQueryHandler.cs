@@ -30,7 +30,7 @@ namespace Engzly.Application.Features.Gigs.Queries.Handlers
                 .OrderByDescending(p => p.SubmittedOn)
                 .Select(p => new ProposalListItemResponse
                 {
-                    Id = p.Id,
+                    PrposalId = p.Id,
                     GigId = p.GigId,
                     GigTitle = p.Gig?.Title,
                     TaskerId = p.TaskerId,

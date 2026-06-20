@@ -8,6 +8,7 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
     using Engzly.Application.Interfaces.AI;
     using Engzly.Application.Interfaces.Authentication;
     using Engzly.Application.Interfaces.Repositories;
+    using Engzly.Application.Responses.GigsResponse;
     using Engzly.Domain.Entities.Common;
     using Engzly.Domain.Entities.Gigs;
     using Engzly.Domain.Entities.Identity;
@@ -24,9 +25,9 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
         IGenericRepository<Media, Guid> _mediaRepo,
         ICategoryClassifier _classifier,
         IOptions<CategoryAIOptions> _categoryAiOptions)
-        : ResponseHandler, IRequestHandler<PublishTaskCommand, Response<string>>
+        : ResponseHandler, IRequestHandler<PublishTaskCommand, Response<PublishGigResponse>>
     {
-        public async Task<Response<string>> Handle(PublishTaskCommand request, CancellationToken cancellationToken)
+        public async Task<Response<PublishGigResponse>> Handle(PublishTaskCommand request, CancellationToken cancellationToken)
         {
             var gig = _mapper.Map<Gig>(request);
 
@@ -35,12 +36,12 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
             var currentUser = _currentUser.GetCurrentUser();
 
             if (currentUser == null)
-                return Unauthorized<string>();
+                return Unauthorized<PublishGigResponse>();
 
             var _user = await _userManger.FindByIdAsync(currentUser.Id);
 
             if (_user.AccountType != AccountType.Client)
-                return Unauthorized<string>("You an Authorized TO Publish Task You Must Create Client Account ");
+                return Unauthorized<PublishGigResponse>("You an Authorized TO Publish Task You Must Create Client Account ");
 
             if (string.IsNullOrWhiteSpace(request.CategoryId))
             {
@@ -54,7 +55,7 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
                 var minConfidence = _categoryAiOptions.Value.MinConfidence;
 
                 if (top is null || top.Score < minConfidence)
-                    return BadRequest<string>("Could not auto-detect category, please pick one");
+                    return BadRequest<PublishGigResponse>("Could not auto-detect category, please pick one");
 
                 gig.CategoryId = top.CategoryId;
             }
@@ -70,7 +71,7 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
             gig.Location = new Location(request.Latitude, request.Longitude);
 
 
-            if (request.MediaIds != null && request.MediaIds.Any())
+            if (request.MediaIds?.Any() == true)
             {
                 var uploadedMedias = new List<Media>();
 
@@ -78,7 +79,7 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
                 {
                     var media = await _mediaRepo.GetByIdAsync(mediaId, cancellationToken);
                     if (media == null)
-                        return BadRequest<string>($"Media {mediaId} not found");
+                        return BadRequest<PublishGigResponse>($"Media {mediaId} not found");
 
                     media.IsTemp = false;
                     media.GigId = gig.Id;
@@ -95,7 +96,19 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
 
             await _gigRepo.CompleteAsync(cancellationToken);
 
-            return Success(gig.Id, "Task published successfully");
+
+            var response = new PublishGigResponse
+            (
+                GigId: gig.Id,
+                Title: gig.Title,
+                Description: gig.Description,
+                TaskStartDate: gig.StartDate.ToString("yyyy-MM-dd"),
+                DueDate: gig.DueDate.ToString("yyyy-MM-dd"),
+                Budget: gig.Budget,
+                ClientName: _user.UserName
+            );
+
+            return Success(response, "Task published successfully");
         }
     }
 }

@@ -4,6 +4,6 @@ using MediatR;
 
 namespace Engzly.Application.Features.Gigs.Queries.Models
 {
-    public sealed record GetMyAssignmentsQuery(string? Role = null)
+    public sealed record GetMyAssignmentsQuery(/*string? Role = null*/)
         : IRequest<Response<IReadOnlyList<AssignmentListItemResponse>>>;
 }
