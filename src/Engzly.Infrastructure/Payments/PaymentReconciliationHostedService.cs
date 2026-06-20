@@ -50,7 +50,9 @@ namespace Engzly.Infrastructure.Payments
 
         private async Task RunOnceAsync(CancellationToken ct)
         {
-            using var scope = scopeFactory.CreateScope();
+            // ? ??????? ?????? ???: ????? ?? await using ???????? CreateAsyncScope
+            await using var scope = scopeFactory.CreateAsyncScope();
+
             var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
             var mediator = scope.ServiceProvider.GetRequiredService<ISender>();
 

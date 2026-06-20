@@ -138,17 +138,60 @@ namespace Engzly.Infrastructure.Payments
             }
         }
 
+        // FIXED: Fawaterak does NOT send a signature header. It sends a "hashKey" field
+        // INSIDE the JSON body, computed as HMAC-SHA256 over
+        // "InvoiceId={id}&InvoiceKey={key}&PaymentMethod={method}" using the Vendor Key.
+        // The old implementation hashed the raw body against a header that never arrives,
+        // so every real webhook from Fawaterak would have been rejected with 401.
         public bool TryVerifyWebhook(string rawBody, string? signatureHeader)
         {
-            if (string.IsNullOrWhiteSpace(signatureHeader) || string.IsNullOrWhiteSpace(_options.HashKey))
+            if (string.IsNullOrWhiteSpace(_options.ProviderKey))
+            {
+                _logger.LogWarning("Webhook verification skipped: ProviderKey (vendor key) is not configured");
                 return false;
+            }
 
-            var key = Encoding.UTF8.GetBytes(_options.HashKey);
-            using var hmac = new HMACSHA256(key);
-            var computed = Convert.ToHexString(hmac.ComputeHash(Encoding.UTF8.GetBytes(rawBody)));
-            return CryptographicOperations.FixedTimeEquals(
-                Encoding.UTF8.GetBytes(computed),
-                Encoding.UTF8.GetBytes(signatureHeader.Trim()));
+            try
+            {
+                using var doc = JsonDocument.Parse(rawBody);
+                var root = doc.RootElement;
+
+                if (!root.TryGetProperty("hashKey", out var hashKeyEl) || hashKeyEl.ValueKind != JsonValueKind.String)
+                {
+                    _logger.LogWarning("Webhook rejected: missing hashKey field in body");
+                    return false;
+                }
+
+                var receivedHash = hashKeyEl.GetString();
+                if (string.IsNullOrWhiteSpace(receivedHash))
+                    return false;
+
+                var invoiceId = root.TryGetProperty("invoice_id", out var idEl) ? idEl.ToString() : string.Empty;
+                var invoiceKey = root.TryGetProperty("invoice_key", out var keyEl) ? keyEl.GetString() ?? string.Empty : string.Empty;
+                var paymentMethod = root.TryGetProperty("payment_method", out var pmEl) ? pmEl.GetString() ?? string.Empty : string.Empty;
+
+                var queryParam = $"InvoiceId={invoiceId}&InvoiceKey={invoiceKey}&PaymentMethod={paymentMethod}";
+
+                var key = Encoding.UTF8.GetBytes(_options.ProviderKey);
+                using var hmac = new HMACSHA256(key);
+                var computed = Convert.ToHexString(hmac.ComputeHash(Encoding.UTF8.GetBytes(queryParam))).ToLowerInvariant();
+
+                var isValid = CryptographicOperations.FixedTimeEquals(
+                    Encoding.UTF8.GetBytes(computed),
+                    Encoding.UTF8.GetBytes(receivedHash.Trim().ToLowerInvariant()));
+
+                if (!isValid)
+                {
+                    _logger.LogWarning("Webhook rejected: hashKey mismatch for invoice {InvoiceId}", invoiceId);
+                }
+
+                return isValid;
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "Webhook rejected: malformed JSON during signature check");
+                return false;
+            }
         }
 
         public PaymentStatus MapProviderStatus(string providerStatus) => providerStatus.Trim().ToLowerInvariant() switch

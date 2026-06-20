@@ -45,6 +45,14 @@ namespace Engzly.API.Controllers
             return Resolve(result);
         }
 
+        [Authorize]
+        [HttpPost("checkout")]
+        public async Task<IActionResult> Checkout([FromBody] CreatePaymentCommand cmd)
+        {
+            var result = await _mediator.Send(cmd);
+            return Resolve(result);
+        }
+
         public sealed class RefundPaymentRequest
         {
             public string? Reason { get; set; }
