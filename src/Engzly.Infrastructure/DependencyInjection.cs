@@ -1,22 +1,23 @@
 ﻿using Engzly.Application.Interfaces;
 using Engzly.Application.Interfaces.AI;
 using Engzly.Application.Interfaces.Authentication;
+using Engzly.Application.Interfaces.Moderation;
 using Engzly.Application.Interfaces.Notifications;
 using Engzly.Application.Interfaces.Payments;
 using Engzly.Application.Interfaces.Repositories;
 using Engzly.Application.Interfaces.Services.Engzly.Application.Interfaces;
 using Engzly.Domain.Entities.Identity;
-using Engzly.Application.Interfaces.Moderation;
 using Engzly.Infrastructure.AI;
 using Engzly.Infrastructure.Authentication;
-using Engzly.Infrastructure.Moderation;
 using Engzly.Infrastructure.Authorization.OtpSecurity;
 using Engzly.Infrastructure.Authorization.OtpSecurity.Notification;
 using Engzly.Infrastructure.Blobs;
+using Engzly.Infrastructure.Moderation;
 using Engzly.Infrastructure.Notifications;
 using Engzly.Infrastructure.Payments;
 using Engzly.Infrastructure.Persistence.Data;
 using Engzly.Infrastructure.Persistence.Repositories;
+using Engzly.Infrastructure.Services;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -97,11 +98,9 @@ public static class DependencyInjection
             client.Timeout = opts.Timeout;
         });
 
-        services.AddHttpClient<IChatBot, HttpChatBot>((sp, client) =>
+        services.AddHttpClient<IChatbotService, PythonChatbotService>(client =>
         {
-            var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Engzly.Application.Interfaces.AI.CategoryAIOptions>>().Value;
-            client.BaseAddress = new Uri(opts.BaseUrl);
-            client.Timeout = opts.Timeout;
+            client.BaseAddress = new Uri(configuration["ChatbotApi:BaseUrl"]!);
         });
 
         services.AddHttpClient<IProfanityFilter, HttpProfanityFilter>((sp, client) =>

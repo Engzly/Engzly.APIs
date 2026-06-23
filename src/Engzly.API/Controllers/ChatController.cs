@@ -50,9 +50,9 @@ namespace Engzly.API.Controllers
         public async Task<IActionResult> DeleteMessage([FromRoute] string messageId)
             => Resolve(await _mediator.Send(new DeleteMessageCommand(messageId)));
 
-        [HttpPost("bot/ask")]
-        public async Task<IActionResult> AskBot([FromBody] AskChatBotCommand command)
-            => Resolve(await _mediator.Send(command));
+        //[HttpPost("bot/ask")]
+        //public async Task<IActionResult> AskBot([FromBody] AskChatBotCommand command)
+        //    => Resolve(await _mediator.Send(command));
 
         public sealed record EditMessageBody(string Text);
     }

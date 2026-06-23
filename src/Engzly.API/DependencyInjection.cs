@@ -108,7 +108,6 @@ namespace Engzly.API
                 c.AddSecurityRequirement(securityReq);
             });
             services.AddHttpContextAccessor();
-
             return services;
         }
     }
