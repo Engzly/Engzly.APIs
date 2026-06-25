@@ -152,6 +152,11 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
                 "StartGig: created invoice {InvoiceId} for gig {GigId} amount {Amount} EGP",
                 invoiceResult.ProviderInvoiceId, gig.Id, amount);
 
+            var conversation = (
+                  await unitOfWork.Conversations.GetAllAsync(
+                  new GigConversationSpec(gig.Id), ct))
+                   .FirstOrDefault();
+
             return Success(new StartGigResponse
             {
                 GigId = gig.Id,
@@ -161,7 +166,8 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
                 HelperAmount = helperAmount,
                 Currency = "EGP",
                 PaymentUrl = invoiceResult.PaymentUrl!,
-                ProviderInvoiceId = invoiceResult.ProviderInvoiceId!
+                ProviderInvoiceId = invoiceResult.ProviderInvoiceId!,
+                ConversationId = conversation?.Id
             });
         }
 

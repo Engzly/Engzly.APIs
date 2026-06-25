@@ -10,5 +10,6 @@ namespace Engzly.Application.Responses.GigsResponse
         public string Currency { get; set; } = "EGP";
         public string PaymentUrl { get; set; } = null!;
         public string ProviderInvoiceId { get; set; } = null!;
+        public string? ConversationId { get; set; }
     }
 }
