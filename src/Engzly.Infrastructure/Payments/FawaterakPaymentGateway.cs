@@ -1,10 +1,10 @@
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
 using Engzly.Application.Interfaces.Payments;
 using Engzly.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 
 namespace Engzly.Infrastructure.Payments
 {
@@ -194,18 +194,38 @@ namespace Engzly.Infrastructure.Payments
             }
         }
 
-        public PaymentStatus MapProviderStatus(string providerStatus) => providerStatus.Trim().ToLowerInvariant() switch
+        public PaymentStatus MapProviderStatus(string providerStatus) /*=> providerStatus.Trim().ToLowerInvariant() switch*/
         {
-            "paid" => PaymentStatus.Funded,
-            "successful" => PaymentStatus.Funded,
-            "success" => PaymentStatus.Funded,
-            "refunded" => PaymentStatus.Refunded,
-            "failed" => PaymentStatus.Failed,
-            "canceled" => PaymentStatus.Failed,
-            "cancelled" => PaymentStatus.Failed,
-            "expired" => PaymentStatus.Expired,
-            "pending" => PaymentStatus.AwaitingFunding,
-            _ => PaymentStatus.Pending
-        };
+            //"paid" => PaymentStatus.Funded,
+            //"successful" => PaymentStatus.Funded,
+            //"success" => PaymentStatus.Funded,
+            //"refunded" => PaymentStatus.Refunded,
+            //"failed" => PaymentStatus.Failed,
+            //"canceled" => PaymentStatus.Failed,
+            //"cancelled" => PaymentStatus.Failed,
+            //"expired" => PaymentStatus.Expired,
+            //"pending" => PaymentStatus.AwaitingFunding,
+            //_ => PaymentStatus.Pending
+
+            var status = providerStatus.Trim().ToLower();
+
+            if (status == "paid" ||
+                status == "success" ||
+                status == "successful" ||
+                status == "refunded")
+            {
+                return PaymentStatus.Funded;
+            }
+            if (status == "failed")
+                return PaymentStatus.Failed;
+
+            if (status == "expired")
+                return PaymentStatus.Expired;
+
+            if (status == "pending")
+                return PaymentStatus.AwaitingFunding;
+
+            return PaymentStatus.Pending;
+        }
     }
 }

@@ -69,5 +69,24 @@ namespace Engzly.API.Controllers
         [AllowAnonymous]
         [HttpGet("return/pending")]
         public IActionResult ReturnPending() => Ok(new { status = "pending" });
+
+
+        [Authorize]
+        [HttpGet("admin")]
+        public async Task<IActionResult> GetPayments()
+        {
+            var result = await _mediator.Send(new GetAllPaymentsQuery());
+            return Resolve(result);
+        }
+
+        [Authorize]
+        [HttpGet("admin/{paymentId}")]
+        public async Task<IActionResult> Details(string paymentId)
+        {
+            var result = await _mediator.Send(
+                new GetPaymentDetailsQuery(paymentId));
+
+            return Resolve(result);
+        }
     }
 }

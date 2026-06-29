@@ -25,34 +25,47 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
 
             var assignment = gig.TaskersAssignments.FirstOrDefault(a => a.TaskerId == currentUserId);
 
-            if (assignment is null)
+            if (assignment is null && assignment.IsCompletedByTasker)
             {
                 return Unauthorized<string>("You are not assigned to this task.");
             }
-
-            if (gig.OwnerId == currentUserId)
-                return Unauthorized<string>("Owner cannot complete the task.");
-
-            if (gig.Status != GigStatus.InProgress)
-                return BadRequest<string>("Only tasks in progress can be marked as complete.");
-
-            if (assignment.IsCompletedByTasker)
-                return BadRequest<string>("You have already marked this task as complete.");
-
             assignment.IsCompletedByTasker = true;
             assignment.CompletedByTaskerOn = DateTime.UtcNow;
 
-            // Check if all taskers have completed the task
-            var AllTaskersCompleted = gig.TaskersAssignments.All(a => a.IsCompletedByTasker == true);
-
-            if (AllTaskersCompleted)
+            if (gig.TaskersAssignments.All(a => a.IsCompletedByTasker))
+            {
                 gig.Status = GigStatus.PendingVerification;
+            }
+
+            gig.Status = GigStatus.PendingVerification;
 
             _gigRepo.Update(gig);
             await _gigRepo.CompleteAsync(cancellationToken);
-            var message = AllTaskersCompleted ? "Task completed and pending verification." : "Task marked as completed by you. Waiting for other taskers to complete.";
 
-            return Success(gig.Id, message);
+            //if (gig.OwnerId == currentUserId)
+            //    return Unauthorized<string>("Owner cannot complete the task.");
+
+            //if (gig.Status != GigStatus.InProgress)
+            //    return BadRequest<string>("Only tasks in progress can be marked as complete.");
+
+            //if (assignment.IsCompletedByTasker)
+            //    return BadRequest<string>("You have already marked this task as complete.");
+
+            //assignment.IsCompletedByTasker = true;
+            //assignment.CompletedByTaskerOn = DateTime.UtcNow;
+
+            //// Check if all taskers have completed the task
+            //var AllTaskersCompleted = gig.TaskersAssignments.All(a => a.IsCompletedByTasker == true);
+
+            //if (AllTaskersCompleted)
+            //    gig.Status = GigStatus.PendingVerification;
+
+            //_gigRepo.Update(gig);
+            //await _gigRepo.CompleteAsync(cancellationToken);
+            //var message = AllTaskersCompleted ? "Task completed and pending verification." : "Task marked as completed by you. Waiting for other taskers to complete.";
+
+            return Success(gig.Id, "Task Pending Verfication Wait For Client TO Verfi .");
+
         }
     }
 

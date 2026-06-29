@@ -43,7 +43,12 @@ namespace Engzly.Application.Features.Otp.Commands.Handlers
             // Save refresh token
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-            user.IsIdentityVerified = true; // Mark the user as verified
+            if (user.AccountType == AccountType.Client || user.AccountType == AccountType.Admin)
+                user.IsIdentityVerified = true; // Mark the user as verified
+            else
+                user.IsIdentityVerified = false;
+
+            //user.IsIdentityVerified = true; // Mark the user as verified
             await _userManager.UpdateAsync(user);
 
 

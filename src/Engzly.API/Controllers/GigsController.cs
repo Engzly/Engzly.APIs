@@ -192,9 +192,26 @@ namespace Engzly.API.Controllers
 
         [Authorize]
         [HttpGet("clientgigs")]
-        public async Task<IActionResult> GetClientGigs()
+
+        public async Task<IActionResult> GetClientGigs([FromQuery] GigStatus? status,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 20)
         {
-            var result = await _mediator.Send(new GetClientGigsQuery());
+            var result = await _mediator.Send(new GetClientGigsQuery(
+            status,
+            page,
+            pageSize));
+            return Resolve(result);
+        }
+
+
+        [HttpGet("earnings")]
+        public async Task<IActionResult> GetEarnings()
+        {
+            var result =
+                await _mediator.Send(
+                    new GetTaskerEarningsQuery());
+
             return Resolve(result);
         }
 

@@ -39,7 +39,7 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
             if (payment.Status == PaymentStatus.Released)
                 return BadRequest<string>("Escrow has already been released for this gig.");
 
-            if (payment.Status != PaymentStatus.Funded)
+            if (payment.Status != PaymentStatus.Funded && payment.Status != PaymentStatus.Refunded)
                 return BadRequest<string>($"Escrow must be funded before release (current: {payment.Status}).");
 
             if (string.IsNullOrWhiteSpace(payment.HelperUserId))
@@ -68,15 +68,15 @@ namespace Engzly.Application.Features.Gigs.Commands.Handlers
                         Id = Guid.NewGuid().ToString(),
                         UserId = payment.HelperUserId!,
                         Currency = payment.Currency,
-                        Balance = 0m,
-                        PendingBalance = payment.HelperAmount,
+                        Balance = payment.HelperAmount,
+                        PendingBalance = payment.PlatformCommission,
                         UpdatedAtUtc = now
                     };
                     await unitOfWork.HelperWallets.AddAsync(wallet, ct);
                 }
                 else
                 {
-                    wallet.PendingBalance += payment.HelperAmount;
+                    wallet.Balance += payment.HelperAmount;
                     wallet.UpdatedAtUtc = now;
                     unitOfWork.HelperWallets.Update(wallet);
                 }

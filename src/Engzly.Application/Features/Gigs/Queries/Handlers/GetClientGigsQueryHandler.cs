@@ -4,7 +4,6 @@ using Engzly.Application.Interfaces.Authentication;
 using Engzly.Application.Interfaces.Repositories;
 using Engzly.Application.Responses.GigsResponse;
 using Engzly.Domain.Entities.Gigs;
-using Engzly.Domain.Enums;
 using Engzly.Domain.Specifications.GigSpecifications;
 using MediatR;
 
@@ -19,32 +18,60 @@ namespace Engzly.Application.Features.Gigs.Queries.Handlers
         public async Task<Response<IReadOnlyList<TaskListItemResponse>>> Handle(GetClientGigsQuery request, CancellationToken cancellationToken)
         {
             var caller = _currentUser.GetCurrentUser();
-            if (caller is null || string.IsNullOrWhiteSpace(caller.Id) || caller.AccountType != AccountType.Client.ToString())
-                Unauthorized<IReadOnlyList<TaskListItemResponse>>();
-            var spec = new GigsByOwnerIdSpecification(caller.Id);
-            var gigs = await gigRepo.GetAllAsync(spec, cancellationToken: cancellationToken);
+            if (caller is null || string.IsNullOrWhiteSpace(caller.Id))
+                return Unauthorized<IReadOnlyList<TaskListItemResponse>>();
+            var gigs = await gigRepo.GetAllAsync(
+                new GigsByUserSpecification(caller.Id),
+                cancellationToken);
             if (gigs.Count == 0)
-                return NotFound<IReadOnlyList<TaskListItemResponse>>("No gigs found for the current client.");
+                return Success<IReadOnlyList<TaskListItemResponse>>([]);
 
-            var response = gigs.Select(g => new TaskListItemResponse
+            var filtered = gigs.AsEnumerable();
+
+            if (request.Status.HasValue)
+                filtered = filtered.Where(
+                    g => g.Status == request.Status.Value);
+
+            var ordered = filtered
+                .OrderByDescending(g => g.CreatedOn)
+                .ToList();
+
+            var total = ordered.Count;
+
+            var page = request.Page < 1 ? 1 : request.Page;
+            var pageSize = request.PageSize < 1 ? 20 : request.PageSize;
+
+            var items = ordered
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(g => new TaskListItemResponse
+                {
+                    Id = g.Id,
+                    Title = g.Title,
+                    Description = g.Description,
+                    CategoryId = g.CategoryId,
+                    CategoryName = g.Category?.Name,
+                    Budget = g.Budget,
+                    NumberOfTaskersNeeded = g.NumberOfTaskersNeeded,
+                    Status = g.Status,
+                    StartDate = g.StartDate,
+                    DueDate = g.DueDate,
+                    CreatedOn = g.CreatedOn,
+                    Latitude = g.Location?.Latitude ?? 0,
+                    Longitude = g.Location?.Longitude ?? 0,
+                    OwnerId = g.OwnerId
+                }).ToList();
+
+            var response = Success<IReadOnlyList<TaskListItemResponse>>(items);
+
+            response.Meta = new
             {
-                Id = g.Id,
-                Title = g.Title,
-                Description = g.Description,
-                CategoryId = g.CategoryId,
-                CategoryName = g.Category?.Name,
-                Budget = g.Budget,
-                NumberOfTaskersNeeded = g.NumberOfTaskersNeeded,
-                Status = g.Status,
-                StartDate = g.StartDate,
-                DueDate = g.DueDate,
-                CreatedOn = g.CreatedOn,
-                Latitude = g.Location?.Latitude ?? 0,
-                Longitude = g.Location?.Longitude ?? 0,
-                OwnerId = g.OwnerId
-            }).ToList();
+                total,
+                page,
+                pageSize
+            };
 
-            return Success<IReadOnlyList<TaskListItemResponse>>(response);
+            return response;
         }
     }
 }

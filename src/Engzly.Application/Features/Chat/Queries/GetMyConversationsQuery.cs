@@ -6,7 +6,6 @@ using Engzly.Application.Interfaces.Repositories;
 using Engzly.Domain.Entities.Chat;
 using Engzly.Domain.Entities.Gigs;
 using Engzly.Domain.Entities.Identity;
-using Engzly.Domain.Enums;
 using Engzly.Domain.Specifications;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -86,12 +85,15 @@ namespace Engzly.Application.Features.Chat.Queries
                         ? "This message was deleted"
                         : last.Text;
 
+                var otherParticipant = participantItems.FirstOrDefault(p => p.UserId != caller.Id);
+                var title = conversation.IsBot ? "Engzly Assistant" : otherParticipant?.UserName ?? gigTitle ?? "Gig Chat";
+
                 result.Add(new ConversationSummaryResponse(
                     conversation.Id,
                     IsBot: false,
                     conversation.GigId,
                     gigTitle,
-                    Title: gigTitle ?? "Gig Chat",
+                    Title: title,
                     participantItems,
                     conversation.LastMessageOn,
                     lastText,
